@@ -111,9 +111,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 
 /* image reveal */
 .img-reveal-wrap{position:relative;width:clamp(280px,55vw,640px);height:clamp(200px,36vw,420px);overflow:hidden;border:1px solid rgba(255,255,255,.1)}
-.img-reveal{width:100%;height:100%;object-fit:cover;transition:filter 4s ease}
-.img-reveal.blurred{filter:blur(6px) brightness(.92)}
-.img-reveal.mid{filter:blur(3px) brightness(.96)}
+.img-reveal{width:100%;height:100%;object-fit:cover;transition:filter 5s ease}
+.img-reveal.blurred{filter:blur(2px) brightness(.95)}
+.img-reveal.mid{filter:blur(1px) brightness(.98)}
 .img-reveal.clear{filter:blur(0px) brightness(1)}
 .img-timer-ring{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 
@@ -282,7 +282,6 @@ body.r4 #nebula-bg{background:radial-gradient(ellipse 60% 40% at 50%50%,rgba(76,
 <!-- QUESTION PLAYER -->
 <div class="screen" id="sc-qplay">
   <div class="qp-rnd" id="qp-rnd"></div>
-  <div class="qp-timer" id="qp-timer">20</div>
   <div class="qp-q" id="qp-q"></div>
   <div class="qp-grid" id="qp-grid"></div>
   <div class="qp-sent" id="qp-sent">
