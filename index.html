@@ -280,10 +280,17 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 <!-- LOBBY HOST -->
 <div class="sc" id="sc-lh">
   <div class="tag">Sala de espera</div>
-  <div class="codebox">
-    <div class="codelbl">Código para unirse</div>
-    <div class="codenum" id="lh-code">----</div>
-    <div class="codeurl" id="lh-url"></div>
+  <div style="display:flex;gap:clamp(16px,3vw,36px);align-items:center;flex-wrap:wrap;justify-content:center">
+    <div class="codebox">
+      <div class="codelbl">Código para unirse</div>
+      <div class="codenum" id="lh-code">----</div>
+      <div class="codeurl" id="lh-url"></div>
+    </div>
+    <!-- QR code -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+      <div class="codelbl">Escanear para unirse</div>
+      <div id="lh-qr" style="background:#fff;padding:10px;border-radius:2px;line-height:0"></div>
+    </div>
   </div>
   <div class="plcnt" id="lh-cnt">0 jugadores</div>
   <div class="plist" id="lh-plist"></div>
@@ -365,13 +372,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 <!-- PUZZLE PLAYER -->
 <div class="sc" id="sc-pzplay">
   <div class="qprnd">Ronda 3 — Rompecabezas</div>
-  <p style="font-size:clamp(10px,1.4vw,12px);color:var(--dim);font-style:italic">Arrastrá las piezas al lugar correcto</p>
-  <!-- board arriba -->
+  <p style="font-size:clamp(10px,1.4vw,12px);color:var(--dim);font-style:italic">Tocá una pieza y luego tocá el lugar donde va</p>
   <div id="pzp-board" class="pzp-board"></div>
-  <!-- tray abajo -->
   <div id="pzp-tray" class="pzp-tray"></div>
-  <div class="pzp-wait" id="pzp-status">Piezas sin colocar: 9</div>
+  <div class="pzp-wait" id="pzp-status">Piezas correctas: 0</div>
 </div>
+<!-- pieza flotante que sigue el puntero -->
+<div id="pz-ghost" style="position:fixed;pointer-events:none;z-index:999;display:none;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.6);transform:translate(-50%,-50%);opacity:.85"></div>
 
 <!-- HANGMAN HOST — OBSERVER DASHBOARD -->
 <div class="sc" id="sc-hmhost">
@@ -448,6 +455,27 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getDatabase,ref,set,get,push,onValue,update,remove,off}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+/* ── QR generator (qrcode-generator lib) ── */
+const qrScript=document.createElement('script');
+qrScript.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+document.head.appendChild(qrScript);
+
+function generateQR(url){
+  const container=document.getElementById('lh-qr');
+  container.innerHTML='';
+  // wait for lib to load
+  const tryGen=()=>{
+    if(typeof QRCode==='undefined'){setTimeout(tryGen,100);return}
+    new QRCode(container,{
+      text:url,width:clamp(120,180),height:clamp(120,180),
+      colorDark:'#000000',colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  };
+  tryGen();
+}
+function clamp(min,max){return Math.min(max,Math.max(min,Math.round(Math.min(innerWidth,innerHeight)*.18)))}
 const FB={apiKey:"AIzaSyCBcJhlFbvWCzg-BgSV9--XEm2Hhum2d7o",authDomain:"museo-quiz-2ff3c.firebaseapp.com",databaseURL:"https://museo-quiz-2ff3c-default-rtdb.firebaseio.com",projectId:"museo-quiz-2ff3c",storageBucket:"museo-quiz-2ff3c.firebasestorage.app",messagingSenderId:"214344230284",appId:"1:214344230284:web:fa0d194dcf4da6cd4f62a9"};
 const app=initializeApp(FB);const db=getDatabase(app);
 
@@ -519,7 +547,9 @@ document.getElementById('btn-host').addEventListener('click',()=>{
   isHost=true;roomCode=genCode();
   set(ref(db,`rooms/${roomCode}`),{status:'lobby',phase:'',currentQ:-1,players:{}});
   document.getElementById('lh-code').textContent=roomCode;
-  document.getElementById('lh-url').textContent=location.origin+location.pathname;
+  const url=location.origin+location.pathname;
+  document.getElementById('lh-url').textContent=url;
+  generateQR(url);
   show('sc-lh');listenPlayers();
 });
 document.getElementById('btn-join').onclick=()=>{isHost=false;show('sc-join');setTimeout(()=>document.getElementById('inp-code').focus(),300)};
@@ -608,11 +638,11 @@ function startImgQ(idx){
   document.getElementById('im-wrap').style.display='block';
   document.getElementById('vid-wrap').style.display='none';
   const im=document.getElementById('im-rev');im.src=q.img;im.className='imrev b1';
-  setTimeout(()=>im.classList.replace('b1','b0'),3000);
+  setTimeout(()=>im.classList.replace('b1','b0'),5000);
   buildAnsGrid(q.opts,idx,'img');
   show('sc-qh');
   listenAnswers(idx,'img');
-  startHostTimer(7,idx,'img',()=>revealImgVid(idx,'img'));
+  startHostTimer(10,idx,'img',()=>revealImgVid(idx,'img'));
 }
 
 function showImgQPlayer(idx){
@@ -647,11 +677,11 @@ function startVidQ(idx){
   document.getElementById('vid-wrap').style.display='block';
   const vid=document.getElementById('rvid');vid.src=q.vid;vid.load();vid.play().catch(()=>{});
   const mask=document.getElementById('vmask');mask.classList.remove('gone');
-  setTimeout(()=>mask.classList.add('gone'),3000);
+  setTimeout(()=>mask.classList.add('gone'),5000);
   buildAnsGrid(q.opts,idx,'vid');
   show('sc-qh');
   listenAnswers(idx,'vid');
-  startHostTimer(7,idx,'vid',()=>revealImgVid(idx,'vid'));
+  startHostTimer(10,idx,'vid',()=>revealImgVid(idx,'vid'));
 }
 
 function showVidQPlayer(idx){
@@ -798,14 +828,11 @@ function _buildPuzzlePlayer(img,cols,rows){
     for(let r=0;r<rows;r++){
       for(let c=0;c<cols;c++){
         const slot=document.createElement('div');slot.className='pzp-slot';
-        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative`;
+        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative;touch-action:none;cursor:pointer`;
         slot.dataset.r=r;slot.dataset.c=c;
         const lbl=document.createElement('span');
         lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:8px;color:rgba(255,255,255,.2);pointer-events:none';
         lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
-        slot.addEventListener('dragover',e=>e.preventDefault());
-        slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,exactW,exactH)});
-        slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,exactW,exactH)},{passive:false});
         board.appendChild(slot);
       }
     }
@@ -815,44 +842,118 @@ function _buildPuzzlePlayer(img,cols,rows){
     tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${exactW+20}px`;
     pzPieces.forEach(p=>{
       const piece=document.createElement('div');piece.className='pzp-piece';
-      piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:grab;border:1px solid rgba(255,255,255,.22)`;
-      piece.dataset.r=p.r;piece.dataset.c=p.c;piece.draggable=true;
-      piece.addEventListener('dragstart',()=>{window._dragPiece=piece;piece.style.opacity='.4'});
-      piece.addEventListener('dragend',()=>{piece.style.opacity='1'});
-      piece.addEventListener('touchstart',()=>{window._dragPiece=piece},{passive:true});
+      piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:pointer;border:1px solid rgba(255,255,255,.22);touch-action:none`;
+      piece.dataset.r=p.r;piece.dataset.c=p.c;
       tray.appendChild(piece);
     });
     document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
     show('sc-pzplay');
+    setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total);
   };
   image.onerror=()=>{ _buildPuzzlePlayer(PUZZLES[0].img,cols,rows) };
   image.src=img;
 }
 
-let _dragPiece=null;
-function dropOnSlot(slot,img,cols,rows,pw,ph,bw,bh){
-  const piece=window._dragPiece;if(!piece)return;
-  const sr=parseInt(slot.dataset.r),sc=parseInt(slot.dataset.c);
-  const pr=parseInt(piece.dataset.r),pc=parseInt(piece.dataset.c);
-  if(slot.classList.contains('correct')){window._dragPiece=null;return}
+/* ── sistema de interacción: tap para seleccionar, tap para colocar ── */
+let pzSelected=null; // pieza actualmente seleccionada
+const pzGhost=document.getElementById('pz-ghost');
+
+function setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total){
+  pzSelected=null;
+  pzGhost.style.display='none';
+  pzGhost.style.width=pw+'px';
+  pzGhost.style.height=ph+'px';
+
+  // mover ghost con el puntero
+  document.addEventListener('pointermove',onPzPointerMove);
+
+  function onPzPointerMove(e){
+    if(!pzSelected)return;
+    pzGhost.style.left=e.clientX+'px';
+    pzGhost.style.top=e.clientY+'px';
+  }
+
+  // tap en pieza del tray — seleccionar
+  document.getElementById('pzp-tray').addEventListener('pointerdown',e=>{
+    const piece=e.target.closest('.pzp-piece');
+    if(!piece)return;
+    e.preventDefault();
+    selectPiece(piece,img,exactW,exactH);
+  });
+
+  // tap en slot del board — colocar
+  document.getElementById('pzp-board').addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    const slot=e.target.closest('.pzp-slot,.pzp-piece');
+    if(!slot)return;
+    // si toca una pieza YA en un slot, seleccionarla
+    if(slot.classList.contains('pzp-piece')&&!slot.parentElement.classList.contains('pzp-tray')){
+      if(slot.parentElement.classList.contains('correct'))return;
+      const parentSlot=slot.parentElement;
+      parentSlot.innerHTML='';
+      parentSlot.classList.remove('has-piece');
+      document.getElementById('pzp-tray').appendChild(slot);
+      selectPiece(slot,img,exactW,exactH);
+      return;
+    }
+    if(!pzSelected)return;
+    const targetSlot=slot.classList.contains('pzp-slot')?slot:slot.parentElement;
+    if(!targetSlot.classList.contains('pzp-slot'))return;
+    placePiece(targetSlot,cols,rows,pw,ph,total);
+  });
+
+  // cancelar con click fuera
+  document.addEventListener('pointerdown',e=>{
+    if(pzSelected&&!e.target.closest('#pzp-board,#pzp-tray')){
+      deselectPiece();
+    }
+  });
+}
+
+function selectPiece(piece,img,exactW,exactH){
+  if(pzSelected)pzSelected.style.outline='';
+  pzSelected=piece;
+  piece.style.outline='2px solid var(--gold)';
+  // mostrar ghost
+  pzGhost.style.backgroundImage=piece.style.backgroundImage;
+  pzGhost.style.backgroundSize=piece.style.backgroundSize;
+  pzGhost.style.backgroundPosition=piece.style.backgroundPosition;
+  pzGhost.style.display='block';
+}
+
+function deselectPiece(){
+  if(pzSelected)pzSelected.style.outline='';
+  pzSelected=null;
+  pzGhost.style.display='none';
+}
+
+function placePiece(slot,cols,rows,pw,ph,total){
+  if(!pzSelected)return;
+  if(slot.classList.contains('correct'))return;
+  const sr=parseInt(slot.dataset.r),sc_=parseInt(slot.dataset.c);
+  const pr=parseInt(pzSelected.dataset.r),pc=parseInt(pzSelected.dataset.c);
+  // si el slot ya tiene pieza, devolver al tray
   const existing=slot.querySelector('.pzp-piece');
-  if(existing){existing.style.opacity='1';document.getElementById('pzp-tray').appendChild(existing)}
+  if(existing){
+    existing.style.outline='';
+    document.getElementById('pzp-tray').appendChild(existing);
+  }
   slot.querySelectorAll('span').forEach(s=>s.remove());
-  piece.style.opacity='1';
-  slot.appendChild(piece);slot.classList.add('has-piece');
-  if(sr===pr&&sc===pc){
+  pzSelected.style.outline='';
+  slot.appendChild(pzSelected);
+  slot.classList.add('has-piece');
+  if(sr===pr&&sc_===pc){
     slot.classList.add('correct');
-    piece.style.cursor='default';piece.draggable=false;
     pzSolved++;
-    const total=cols*rows;
     document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolved}/${total}`;
-    update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc}`]:playerName||'?'});
+    update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc_}`]:playerName||'?'});
     get(ref(db,`rooms/${roomCode}/players/${playerKey}`)).then(snap=>{
       const p=snap.val()||{};
-      update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+50,[`pts/pz_${sr}_${sc}`]:50});
+      update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+50,[`pts/pz_${sr}_${sc_}`]:50});
     });
   }
-  window._dragPiece=null;
+  pzSelected=null;
+  pzGhost.style.display='none';
 }
 
 /* ══════════════════════
@@ -1175,7 +1276,7 @@ async function submitAnswer(optIdx,idx,type){
   if(answered)return;answered=true;
   const qs=type==='img'?IMG_QS:VID_QS;
   const q=qs[idx];const correct=optIdx===q.ans;
-  const pts=correct?Math.max(50,Math.round((timeLeft/7)*1000)):0;
+  const pts=correct?Math.max(50,Math.round((timeLeft/10)*1000)):0;
   document.querySelectorAll('.qpb').forEach(b=>b.disabled=true);
   await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{[`answers/${type}_${idx}`]:optIdx,[`pts/${type}_${idx}`]:pts});
   const snap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
