@@ -110,10 +110,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 .qh-recv{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.2vw,10px);color:var(--faint);letter-spacing:.16em;text-transform:uppercase;margin-top:clamp(5px,1vh,10px)}
 
 /* image reveal */
-.img-reveal-wrap{position:relative;width:clamp(220px,40vw,480px);height:clamp(160px,28vw,320px);overflow:hidden;border:1px solid rgba(255,255,255,.1)}
-.img-reveal{width:100%;height:100%;object-fit:cover;transition:filter 3s ease}
-.img-reveal.blurred{filter:blur(28px) brightness(.7)}
-.img-reveal.mid{filter:blur(12px) brightness(.85)}
+.img-reveal-wrap{position:relative;width:clamp(280px,55vw,640px);height:clamp(200px,36vw,420px);overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.img-reveal{width:100%;height:100%;object-fit:cover;transition:filter 4s ease}
+.img-reveal.blurred{filter:blur(6px) brightness(.92)}
+.img-reveal.mid{filter:blur(3px) brightness(.96)}
 .img-reveal.clear{filter:blur(0px) brightness(1)}
 .img-timer-ring{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 
@@ -584,16 +584,30 @@ function startTimer(host,idx){
   updateTimerUI(host);
   const pf=host?document.getElementById('qh-progfill'):null;
   if(pf){pf.style.transition=`width ${q.rTime}s linear`;pf.style.width='0%'}
-  timerInterval=setInterval(()=>{
-    timeLeft--;
-    updateTimerUI(host);
-    if(timeLeft<=0){clearInterval(timerInterval);if(host)revealAnswer(idx)}
-  },1000);
+
+  if(host){
+    // host drives the timer and writes to Firebase
+    timerInterval=setInterval(()=>{
+      timeLeft--;
+      updateTimerUI(true);
+      // sync to Firebase so players read same value
+      update(ref(db,`rooms/${roomCode}`),{timeLeft});
+      if(timeLeft<=0){clearInterval(timerInterval);revealAnswer(idx)}
+    },1000);
+  } else {
+    // player listens to Firebase timeLeft
+    addFBListener(ref(db,`rooms/${roomCode}/timeLeft`),snap=>{
+      if(snap.val()===null||snap.val()===undefined)return;
+      timeLeft=snap.val();
+      updateTimerUI(false);
+    });
+  }
 }
 
 function updateTimerUI(host){
   const id=host?'qh-timer':'qp-timer';
   const el=document.getElementById(id);
+  if(!el)return;
   el.textContent=timeLeft;
   el.classList.toggle('hot',timeLeft<=4);
 }
