@@ -260,8 +260,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   <div class="btns">
     <button class="btn btn-g" id="btn-join" style="font-size:clamp(12px,1.8vw,16px);padding:clamp(14px,2.5vh,20px) clamp(32px,5vw,56px)">Unirme al juego</button>
   </div>
-  <!-- botón presentador — discreto, esquina inferior izquierda -->
-  <button id="btn-host" title="Presentador" style="position:fixed;bottom:16px;left:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:all .3s;z-index:50;backdrop-filter:blur(4px)">Presentador</button>
+  <!-- botón presentador — cuadrado discreto esquina inferior izquierda -->
+  <button id="btn-host" title="Presentador" style="position:fixed;bottom:16px;left:16px;width:36px;height:36px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s;z-index:50;backdrop-filter:blur(4px)"></button>
 </div>
 
 <!-- JOIN -->
@@ -477,7 +477,7 @@ const VID_QS=[
 // RONDA 3 — rompecabezas — 2 puzzles en secuencia
 const PUZZLES=[
   {img:'imagen/imagen16.jpg', label:'ENIAC — Primera Computadora, 1945', cols:2, rows:2, time:10},
-  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:45},
+  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:40},
 ];
 let puzzleIdx=0;
 // RONDA 4 — ahorcado 20s por palabra
@@ -787,7 +787,9 @@ function _buildPuzzlePlayer(img,cols,rows){
     const total=cols*rows;
     pzPieces=[];
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) pzPieces.push({r,c});
-    pzPieces.sort(()=>Math.random()-.5);
+    // shuffle garantizado — ninguna pieza en su posición correcta
+    do { pzPieces.sort(()=>Math.random()-.5) }
+    while(pzPieces.some((p,i)=>p.r===Math.floor(i/cols)&&p.c===i%cols));
     pzSolved=0;
 
     // board de slots
@@ -889,6 +891,7 @@ function startHangmanWord(wIdx){
   timerInterval=setInterval(()=>{
     t--;
     timerEl.textContent=`Palabra ${wIdx+1}/${HM_WORDS.length} — ${t}s`;
+    update(ref(db,`rooms/${roomCode}`),{timeLeft:t});
     if(t<=0){
       clearInterval(timerInterval);
       // reveal word on host dashboard
@@ -1084,19 +1087,30 @@ async function sendHangmanLetter(letter){
   document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
   hmpWon=word.split('').every((_,i)=>hmpRevealed[i]);
   hmpDead=hmpMisses>=HM_PLAYER_PARTS.length;
+  // puntos por letra correcta (+50) o incorrecta (-30) en tiempo real
+  const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
+  const currentScore=(pSnap.val()||{}).score||0;
+  const letterPts=hit?50:-30;
+  const newScore=Math.max(0,currentScore+letterPts);
+  await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:newScore});
   await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:hmpMisses,won:hmpWon});
   if(hmpWon||hmpDead){
     clearInterval(hmpTimerInterval);
     disableKeyboard();
     const res=document.getElementById('hmp-result');res.style.display='block';
     if(hmpWon){
-      const lives=HM_PLAYER_PARTS.length-hmpMisses;
-      const pts=lives*100;
-      res.textContent=`¡Adivinaste! +${pts} pts`;res.style.color='var(--green)';
-      const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
-      const p=pSnap.val()||{};
-      await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+pts,[`pts/hm_${hmWordIdx}`]:pts});
+      // bonus de velocidad: tiempo restante * 10
+      const timeSnap=await get(ref(db,`rooms/${roomCode}/timeLeft`));
+      const tLeft=timeSnap.val()||0;
+      const speedBonus=Math.round(tLeft*10);
+      if(speedBonus>0){
+        const s2=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
+        const sc2=(s2.val()||{}).score||0;
+        await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:sc2+speedBonus,[`pts/hm_${hmWordIdx}_bonus`]:speedBonus});
+      }
+      res.textContent=`¡Adivinaste! ${speedBonus>0?`+${speedBonus} velocidad`:''}`;res.style.color='var(--green)';
     } else {
+      // si llegó hasta aquí sin adivinar, no penalizar más — ya se descontó por letras
       res.textContent=`La palabra era: ${word}`;res.style.color='var(--red)';
       word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
     }
