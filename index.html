@@ -673,14 +673,17 @@ function startPuzzleHost(pIdx){
   const pz=PUZZLES[pIdx];
   clearInterval(timerInterval);
   timeLeft=pz.time;
+  window._lastPuzzleSolved={};
   clearL();
   update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:pIdx,puzzleImg:pz.img,puzzleLabel:pz.label,puzzleCols:pz.cols,puzzleRows:pz.rows,puzzleSolved:{},timeLeft:pz.time});
-  // host UI — show reference image + group tracking
+  // HOST: muestra la imagen grande mientras los grupos la arman
   document.getElementById('pzh-title').textContent=`Rompecabezas ${pIdx+1}/${PUZZLES.length}`;
   document.getElementById('pzh-ref-img').src=pz.img;
+  document.getElementById('pzh-ref-img').style.cssText='width:clamp(200px,38vw,500px);height:clamp(140px,28vw,360px);object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 40px var(--glow)';
   document.getElementById('pzh-label').textContent=pz.label;
   document.getElementById('pzh-groups').innerHTML='';
-  document.getElementById('pzh-info').textContent='Los grupos arman el rompecabezas desde su dispositivo';
+  document.getElementById('pzh-groups').style.display='none';
+  document.getElementById('pzh-info').textContent=`¡Los grupos están armando esta imagen! (${pz.cols}×${pz.rows} piezas)`;
   document.getElementById('pz-next').style.display='none';
   show('sc-pzhost');
   const pf=document.getElementById('pz-pf');
@@ -694,46 +697,37 @@ function startPuzzleHost(pIdx){
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
     if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
-  // listen to each player's solved pieces
-  addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
-    buildPuzzleHostOverlay(snap.val()||{},pz);
-  });
+  // guardar solved silenciosamente para mostrarlo al final
+  addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{window._lastPuzzleSolved=snap.val()||{}});
   listenPlayers();
-}
-
-function buildPuzzleHostOverlay(solved,pz){
-  const total=pz.cols*pz.rows;
-  // group pieces by player name
-  const byPlayer={};
-  Object.entries(solved).forEach(([key,playerNm])=>{
-    if(!byPlayer[playerNm])byPlayer[playerNm]=0;
-    byPlayer[playerNm]++;
-  });
-  const container=document.getElementById('pzh-groups');
-  container.innerHTML='';
-  let allDone=Object.keys(byPlayer).length>0;
-  Object.entries(byPlayer).forEach(([nm,cnt])=>{
-    const pct=Math.round(cnt/total*100);
-    const done=cnt>=total;
-    if(!done)allDone=false;
-    const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;
-    row.innerHTML=`<span class="pzg-name">${nm}</span>
-      <div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div>
-      <span class="pzg-count">${cnt}/${total}</span>`;
-    container.appendChild(row);
-  });
-  const totalSolved=Object.keys(solved).length;
-  document.getElementById('pzh-info').textContent=`${totalSolved}/${total} piezas colocadas en total`;
 }
 
 function endPuzzle(pIdx){
   clearInterval(timerInterval);
-  clearL(); // stop listening to old puzzleSolved
-  listenGame(); // re-attach main game listener
-  document.getElementById('pzh-info').textContent='¡Tiempo!';
+  const pz=PUZZLES[pIdx];
+  const solved=window._lastPuzzleSolved||{};
+  const total=pz.cols*pz.rows;
+  // shrink image and show group results
+  document.getElementById('pzh-ref-img').style.cssText='width:clamp(100px,16vw,180px);height:clamp(70px,12vw,130px);object-fit:cover;border:1px solid var(--gold)';
+  document.getElementById('pzh-groups').style.display='block';
+  document.getElementById('pzh-info').textContent='Tiempo agotado — así quedaron los grupos:';
+  // build per-group results
+  const byPlayer={};
+  Object.entries(solved).forEach(([key,nm])=>{if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++});
+  const container=document.getElementById('pzh-groups');container.innerHTML='';
+  Object.entries(byPlayer).sort((a,b)=>b[1]-a[1]).forEach(([nm,cnt])=>{
+    const pct=Math.round(cnt/total*100);
+    const done=cnt>=total;
+    const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;
+    row.innerHTML=`<span class="pzg-name">${nm}</span><div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div><span class="pzg-count">${cnt}/${total} piezas</span>`;
+    container.appendChild(row);
+  });
+  if(Object.keys(byPlayer).length===0){
+    container.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--faint);letter-spacing:.12em">Ningún grupo colocó piezas correctamente</div>';
+  }
   const isLast=pIdx>=PUZZLES.length-1;
   const btn=document.getElementById('pz-next');
-  btn.textContent=isLast?'Ver resultados →':'Siguiente rompecabezas →';
+  btn.textContent=isLast?'Ver resultados finales →':'Siguiente rompecabezas →';
   btn.style.display='inline-flex';
 }
 
@@ -745,24 +739,22 @@ document.getElementById('pz-next').onclick=()=>{
   } else {
     const nextIdx=puzzleIdx+1;
     const pz=PUZZLES[nextIdx];
-    // clear old solved data before starting new puzzle
     remove(ref(db,`rooms/${roomCode}/puzzleSolved`));
     update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'pz',currentQ:nextIdx});
-    showRoundIntro(3,`Rompecabezas ${nextIdx+1}/${PUZZLES.length}`,`${pz.cols}×${pz.rows} piezas — ${pz.time} segundos`,()=>startPuzzleHost(nextIdx));
+    showRoundIntro(3,`Rompecabezas ${nextIdx+1}/${PUZZLES.length}`,`${pz.cols}×${pz.rows} — ${pz.time} segundos`,()=>startPuzzleHost(nextIdx));
   }
 };
 
 async function showPuzzleResults(){
   const snap=await get(ref(db,`rooms/${roomCode}/players`));
   const players=Object.entries(snap.val()||{}).map(([k,v])=>({...v,key:k})).sort((a,b)=>b.score-a.score);
-  buildScoreList(players,null,'Rompecabezas completado','');
+  buildScoreList(players,'Ronda 3 — Rompecabezas','Resultados finales','');
   document.getElementById('btn-nxt').textContent='Ronda 4 — Ahorcado →';
   document.getElementById('btn-nxt').onclick=()=>startRound4();
   show('sc-res');
 }
 
 function showPuzzlePlayer(){
-  // read all puzzle config from Firebase to always match host
   get(ref(db,`rooms/${roomCode}`)).then(snap=>{
     const room=snap.val()||{};
     const img=room.puzzleImg||PUZZLES[0].img;
@@ -773,59 +765,67 @@ function showPuzzlePlayer(){
 }
 
 function _buildPuzzlePlayer(img,cols,rows){
-  const size=Math.min(innerWidth*.85,Math.min(innerWidth,innerHeight)*.7,300);
-  const pw=size/cols,ph=size/rows;
+  const maxSide=Math.min(innerWidth*.9,innerHeight*.42,280);
+  const pw=Math.floor(maxSide/cols);
+  const ph=Math.floor(maxSide/rows);
+  const bw=pw*cols;const bh=ph*rows;
   const total=cols*rows;
-  pzPieces=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)pzPieces.push({r,c});
+  pzPieces=[];
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) pzPieces.push({r,c});
   pzPieces.sort(()=>Math.random()-.5);
   pzSolved=0;
   const board=document.getElementById('pzp-board');board.innerHTML='';
-  board.style.cssText=`grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:3px`;
+  board.style.cssText=`display:grid;grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:2px`;
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const slot=document.createElement('div');slot.className='pzp-slot';
-      slot.style.cssText=`width:${pw}px;height:${ph}px`;
+      slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative`;
       slot.dataset.r=r;slot.dataset.c=c;
-      slot.addEventListener('dragover',e=>{e.preventDefault()});
-      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows)});
-      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows)},{passive:false});
+      const lbl=document.createElement('span');
+      lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none';
+      lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
+      slot.addEventListener('dragover',e=>e.preventDefault());
+      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,bw,bh)});
+      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,bw,bh)},{passive:false});
       board.appendChild(slot);
     }
   }
   const tray=document.getElementById('pzp-tray');tray.innerHTML='';
+  tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${bw+20}px`;
   pzPieces.forEach(p=>{
     const piece=document.createElement('div');piece.className='pzp-piece';
-    piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url(${img});background-size:${size}px ${size}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0`;
-    piece.dataset.r=p.r;piece.dataset.c=p.c;
-    piece.draggable=true;
-    piece.addEventListener('dragstart',()=>{window._dragPiece=piece});
+    piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${bw}px ${bh}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:grab;border:1px solid rgba(255,255,255,.25)`;
+    piece.dataset.r=p.r;piece.dataset.c=p.c;piece.draggable=true;
+    piece.addEventListener('dragstart',()=>{window._dragPiece=piece;piece.style.opacity='.4'});
+    piece.addEventListener('dragend',()=>{piece.style.opacity='1'});
     piece.addEventListener('touchstart',()=>{window._dragPiece=piece},{passive:true});
     tray.appendChild(piece);
   });
-  document.getElementById('pzp-status').textContent=`Piezas sin colocar: ${total}`;
+  document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
   show('sc-pzplay');
 }
 
 let _dragPiece=null;
-function dropOnSlot(slot,img,cols,rows){
+function dropOnSlot(slot,img,cols,rows,pw,ph,bw,bh){
   const piece=window._dragPiece;if(!piece)return;
   const sr=parseInt(slot.dataset.r),sc=parseInt(slot.dataset.c);
   const pr=parseInt(piece.dataset.r),pc=parseInt(piece.dataset.c);
-  if(slot.classList.contains('correct'))return;
-  // remove any existing wrong piece from slot
-  const existing=slot.querySelector('.pzp-piece');if(existing)document.getElementById('pzp-tray').appendChild(existing);
+  if(slot.classList.contains('correct')){window._dragPiece=null;return}
+  const existing=slot.querySelector('.pzp-piece');
+  if(existing){existing.style.opacity='1';document.getElementById('pzp-tray').appendChild(existing)}
+  slot.querySelectorAll('span').forEach(s=>s.remove());
+  piece.style.opacity='1';
   slot.appendChild(piece);slot.classList.add('has-piece');
   if(sr===pr&&sc===pc){
     slot.classList.add('correct');
+    piece.style.cursor='default';piece.draggable=false;
     pzSolved++;
-    update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc}`]:playerName||'?'});
-    const total=cols&&rows?cols*rows:4;
+    const total=cols*rows;
     document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolved}/${total}`;
-    // add pts
-    const pts=50;
+    update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc}`]:playerName||'?'});
     get(ref(db,`rooms/${roomCode}/players/${playerKey}`)).then(snap=>{
-      const p=snap.val()||{};const total=(p.score||0)+pts;
-      update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:total,[`pts/pz_${sr}_${sc}`]:pts});
+      const p=snap.val()||{};
+      update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+50,[`pts/pz_${sr}_${sc}`]:50});
     });
   }
   window._dragPiece=null;
