@@ -321,7 +321,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   <div class="pzh-top">
     <span class="qhmeta">Ronda 3 — Rompecabezas</span>
     <div class="qhpbar"><div class="qhpfill" id="pz-pf" style="width:100%"></div></div>
-    <div class="qhtimer" id="pz-timer">60</div>
+    <div class="qhtimer" id="pz-timer">20</div>
   </div>
   <div class="pzh-board" id="pzh-board"></div>
   <div class="pzh-info" id="pzh-info">Los grupos arman el rompecabezas desde su dispositivo</div>
@@ -432,21 +432,19 @@ const FB={apiKey:"AIzaSyCBcJhlFbvWCzg-BgSV9--XEm2Hhum2d7o",authDomain:"museo-qui
 const app=initializeApp(FB);const db=getDatabase(app);
 
 /* ══ DATA ══ */
-// RONDA 1 — imagen misteriosa (3 preguntas, 20s)
+// RONDA 1 — imagen misteriosa (2 imágenes, 7s)
 const IMG_QS=[
   {q:'¿Qué invento histórico muestra esta imagen?',img:'imagen/imagen11.jpg',opts:['Máquina de vapor','Locomotora a vapor','Motor de combustión','Generador eléctrico'],ans:0,label:'Máquina de Vapor — James Watt, 1769'},
   {q:'¿Qué representa esta imagen histórica?',img:'imagen/imagen16.jpg',opts:['Primer satélite','ENIAC — primera computadora','Primer servidor web','Centro de control NASA'],ans:1,label:'ENIAC — Primera Computadora, 1945'},
-  {q:'¿A qué período histórico pertenece esta escena?',img:'imagen/imagen3.jpg',opts:['Roma antigua','Mesopotamia','Grecia clásica','Egipto faraónico'],ans:2,label:'Filosofía Griega — ~600 a.C.'},
 ];
-// RONDA 2 — adivina el video (3 preguntas, 20s)
+// RONDA 2 — adivina el video (2 videos, 7s)
 const VID_QS=[
   {q:'¿Qué invento histórico muestra este video?',vid:'video/video1.mp4',opts:['La rueda','El arado','La palanca','El eje'],ans:0,label:'La Rueda — Mesopotamia, ~3500 a.C.'},
-  {q:'¿Qué revolución evoca este video?',vid:'video/video8.mp4',opts:['Revolución Francesa','Revolución Industrial','Revolución Científica','Revolución Digital'],ans:1,label:'Máquina de Vapor — Revolución Industrial'},
   {q:'¿Qué tecnología representa este video?',vid:'video/video13.mp4',opts:['ARPANET','World Wide Web','IA Generativa','Computación cuántica'],ans:2,label:'IA Generativa — 2022'},
 ];
-// RONDA 3 — rompecabezas (1 imagen, 9 piezas, 60s)
-const PUZZLE={img:'imagen/imagen16.jpg',label:'ENIAC — Primera Computadora',cols:3,rows:3};
-// RONDA 4 — ahorcado (3 palabras, 2 min total)
+// RONDA 3 — rompecabezas (1 imagen, 4 piezas 2x2, 20s)
+const PUZZLE={img:'imagen/imagen11.jpg',label:'Máquina de Vapor — Revolución Industrial',cols:2,rows:2};
+// RONDA 4 — ahorcado sin timer (el presentador avanza manualmente)
 const HM_WORDS=[
   {word:'ALGORITMO',hint:'Término que viene del nombre de Al-Juarismi',pts:400},
   {word:'HELIOCENTRISMO',hint:'Modelo donde el Sol está en el centro',pts:500},
@@ -568,11 +566,11 @@ function startImgQ(idx){
   document.getElementById('im-wrap').style.display='block';
   document.getElementById('vid-wrap').style.display='none';
   const im=document.getElementById('im-rev');im.src=q.img;im.className='imrev b1';
-  setTimeout(()=>im.classList.replace('b1','b0'),8000);
+  setTimeout(()=>im.classList.replace('b1','b0'),3000);
   buildAnsGrid(q.opts,idx,'img');
   show('sc-qh');
   listenAnswers(idx,'img');
-  startHostTimer(20,idx,'img',()=>revealImgVid(idx,'img'));
+  startHostTimer(7,idx,'img',()=>revealImgVid(idx,'img'));
 }
 
 function showImgQPlayer(idx){
@@ -607,11 +605,11 @@ function startVidQ(idx){
   document.getElementById('vid-wrap').style.display='block';
   const vid=document.getElementById('rvid');vid.src=q.vid;vid.load();vid.play().catch(()=>{});
   const mask=document.getElementById('vmask');mask.classList.remove('gone');
-  setTimeout(()=>mask.classList.add('gone'),5000);
+  setTimeout(()=>mask.classList.add('gone'),3000);
   buildAnsGrid(q.opts,idx,'vid');
   show('sc-qh');
   listenAnswers(idx,'vid');
-  startHostTimer(20,idx,'vid',()=>revealImgVid(idx,'vid'));
+  startHostTimer(7,idx,'vid',()=>revealImgVid(idx,'vid'));
 }
 
 function showVidQPlayer(idx){
@@ -636,24 +634,22 @@ function startRound3(){
 
 function startPuzzleHost(){
   clearInterval(timerInterval);
-  timeLeft=60;
-  update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:0,puzzleImg:PUZZLE.img,puzzleLabel:PUZZLE.label,puzzleSolved:{},timeLeft:60});
+  timeLeft=20;
+  update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:0,puzzleImg:PUZZLE.img,puzzleLabel:PUZZLE.label,puzzleSolved:{},timeLeft:20});
   buildPuzzleHost();
   show('sc-pzhost');
   document.getElementById('pzh-label').textContent=PUZZLE.label;
   document.getElementById('pz-next').style.display='none';
-  // timer
   const pf=document.getElementById('pz-pf');
   pf.style.transition='none';pf.style.width='100%';
-  setTimeout(()=>{pf.style.transition=`width 60s linear`;pf.style.width='0%'},80);
+  setTimeout(()=>{pf.style.transition='width 20s linear';pf.style.width='0%'},80);
   timerInterval=setInterval(()=>{
     timeLeft--;
     document.getElementById('pz-timer').textContent=timeLeft;
-    document.getElementById('pz-timer').classList.toggle('hot',timeLeft<=10);
+    document.getElementById('pz-timer').classList.toggle('hot',timeLeft<=5);
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
     if(timeLeft<=0){clearInterval(timerInterval);endPuzzle()}
   },1000);
-  // listen puzzle solved
   addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
     const solved=snap.val()||{};
     buildPuzzleHostOverlay(solved);
@@ -794,18 +790,10 @@ function startHangmanWord(wIdx){
   update(ref(db,`rooms/${roomCode}`),state);
   buildHangmanHost(w);
   show('sc-hmhost');
-  // timer 2 min total spread across words
-  const secs=Math.floor(120/HM_WORDS.length);
-  timeLeft=secs;
-  const pf=document.getElementById('hm-pf');
-  pf.style.transition='none';pf.style.width='100%';
-  setTimeout(()=>{pf.style.transition=`width ${secs}s linear`;pf.style.width='0%'},80);
-  timerInterval=setInterval(()=>{
-    timeLeft--;document.getElementById('hm-timer').textContent=timeLeft;
-    document.getElementById('hm-timer').classList.toggle('hot',timeLeft<=8);
-    update(ref(db,`rooms/${roomCode}`),{timeLeft});
-    if(timeLeft<=0){clearInterval(timerInterval);revealHangmanWord()}
-  },1000);
+  // no timer — host advances manually when word is solved or gives up
+  clearInterval(timerInterval);
+  document.getElementById('hm-timer').style.display='none';
+  document.getElementById('hm-pf').parentElement.style.display='none';
   // listen for letter proposals
   addL(ref(db,`rooms/${roomCode}/hmProposals`),snap=>{
     if(!snap.exists())return;
@@ -1024,7 +1012,7 @@ async function submitAnswer(optIdx,idx,type){
   if(answered)return;answered=true;
   const qs=type==='img'?IMG_QS:VID_QS;
   const q=qs[idx];const correct=optIdx===q.ans;
-  const pts=correct?Math.max(50,Math.round((timeLeft/20)*1000)):0;
+  const pts=correct?Math.max(50,Math.round((timeLeft/7)*1000)):0;
   document.querySelectorAll('.qpb').forEach(b=>b.disabled=true);
   await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{[`answers/${type}_${idx}`]:optIdx,[`pts/${type}_${idx}`]:pts});
   const snap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
