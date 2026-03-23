@@ -151,6 +151,14 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 #sc-hmhost{justify-content:flex-start;padding-top:clamp(14px,2.5vh,22px)}
 .hmh-top{display:flex;align-items:center;gap:clamp(8px,1.8vw,18px);width:100%;max-width:860px;flex-shrink:0}
 .hmh-body{display:flex;gap:clamp(16px,3vw,36px);align-items:flex-start;width:100%;max-width:860px;flex:1}
+/* hangman team cards */
+.hm-team-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.025);padding:clamp(8px,1.5vh,14px) clamp(10px,1.8vw,16px);display:flex;flex-direction:column;gap:4px;transition:border-color .3s,background .3s}
+.hm-team-card.won{border-color:var(--green);background:rgba(76,175,125,.08)}
+.hm-team-card.dead{border-color:var(--red);background:rgba(232,69,69,.06);opacity:.6}
+.hm-tc-name{font-family:'Cinzel',serif;font-size:clamp(10px,1.4vw,13px);font-weight:600;color:var(--text)}
+.hm-tc-lives{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);letter-spacing:.1em;color:var(--gold)}
+.hm-tc-hearts{font-size:clamp(11px,1.5vw,14px);letter-spacing:1px}
+.hm-tc-status{font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .hmh-left{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2vh,18px);flex:1}
 /* SVG gallows */
 .gallows-svg{width:clamp(130px,20vw,220px);height:clamp(130px,20vw,220px)}
@@ -342,58 +350,46 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   <div class="pzp-wait" id="pzp-status">Piezas sin colocar: 9</div>
 </div>
 
-<!-- HANGMAN HOST -->
+<!-- HANGMAN HOST — OBSERVER DASHBOARD -->
 <div class="sc" id="sc-hmhost">
   <div class="hmh-top">
-    <span class="qhmeta">Ronda 4 — Ahorcado</span>
-    <div class="qhpbar"><div class="qhpfill" id="hm-pf" style="width:100%"></div></div>
-    <div class="qhtimer" id="hm-timer">120</div>
+    <span class="qhmeta" id="hm-wordlbl">Palabra 1 / 3</span>
+    <div style="flex:1"></div>
+    <button class="btn btn-g" id="hm-nextword" style="display:none;font-size:9px;padding:6px 14px">Siguiente palabra →</button>
+    <button class="btn btn-g" id="hm-finish" style="display:none;font-size:9px;padding:6px 14px">Ver resultados →</button>
   </div>
-  <div class="hmh-body">
-    <div class="hmh-left">
-      <svg class="gallows-svg" id="gallows" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <!-- structure always shown -->
-        <line x1="20" y1="190" x2="180" y2="190" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-        <line x1="60" y1="190" x2="60" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-        <line x1="60" y1="20" x2="130" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-        <line x1="130" y1="20" x2="130" y2="40" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-        <!-- body parts — shown progressively, hidden by default -->
-        <circle id="hm-head" cx="130" cy="55" r="14" fill="none" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-        <line id="hm-body" x1="130" y1="69" x2="130" y2="120" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-        <line id="hm-la" x1="130" y1="85" x2="108" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-        <line id="hm-ra" x1="130" y1="85" x2="152" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-        <line id="hm-ll" x1="130" y1="120" x2="108" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-        <line id="hm-rl" x1="130" y1="120" x2="152" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-      </svg>
-      <div class="hmh-word" id="hmh-word"></div>
-      <div class="hmh-status" id="hmh-status"></div>
-    </div>
-    <div class="hmh-right">
-      <div>
-        <div class="hmh-used">Letras usadas</div>
-        <div class="hmh-letters" id="hmh-letters"></div>
-      </div>
-      <div>
-        <div class="hmh-used">Propuestas de grupos</div>
-        <div class="hmh-proposals" id="hmh-proposals"></div>
-      </div>
-      <button class="btn btn-g" id="hm-nextword" style="display:none;font-size:9px">Siguiente palabra →</button>
-      <button class="btn btn-g" id="hm-finish" style="display:none;font-size:9px">Ver resultados finales →</button>
-    </div>
-  </div>
+  <!-- word display centered -->
+  <div class="hmh-word" id="hmh-word" style="margin:clamp(6px,1.5vh,12px) 0"></div>
+  <div class="hmh-status" id="hmh-status"></div>
+  <!-- teams grid — one card per team showing lives + status -->
+  <div id="hm-teams-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:clamp(6px,1.2vw,12px);width:100%;max-width:860px;margin-top:clamp(6px,1.5vh,12px)"></div>
 </div>
 
-<!-- HANGMAN PLAYER -->
+<!-- HANGMAN PLAYER — INDIVIDUAL -->
 <div class="sc" id="sc-hmplay">
   <div class="qprnd">Ronda 4 — Ahorcado</div>
+  <!-- mini gallows player -->
+  <svg width="90" height="90" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+    <line x1="20" y1="190" x2="180" y2="190" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+    <line x1="60" y1="190" x2="60" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+    <line x1="60" y1="20" x2="130" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+    <line x1="130" y1="20" x2="130" y2="40" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+    <circle id="hmp-head" cx="130" cy="55" r="14" fill="none" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    <line id="hmp-body" x1="130" y1="69" x2="130" y2="120" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    <line id="hmp-la" x1="130" y1="85" x2="108" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    <line id="hmp-ra" x1="130" y1="85" x2="152" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    <line id="hmp-ll" x1="130" y1="120" x2="108" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    <line id="hmp-rl" x1="130" y1="120" x2="152" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+  </svg>
   <div class="hmp-word" id="hmp-word"></div>
   <p class="hmp-hint" id="hmp-hint"></p>
-  <div class="hmp-inp-row">
+  <div class="hmp-inp-row" id="hmp-inp-row">
     <input class="hmp-inp" id="hmp-inp" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="A">
     <button class="btn btn-g" id="hmp-send" style="padding:10px 16px">Enviar</button>
   </div>
-  <div class="hmp-lives">Vidas restantes: <span id="hmp-lives">6</span></div>
-  <div class="hmp-used" id="hmp-used">Letras probadas: —</div>
+  <div class="hmp-lives">Vidas: <span id="hmp-lives">6</span> / 6</div>
+  <div class="hmp-used" id="hmp-used">Letras: —</div>
+  <div id="hmp-result" style="display:none;font-family:'Cinzel',serif;font-size:clamp(16px,2.8vw,28px);font-weight:700;margin-top:6px"></div>
 </div>
 
 <!-- RESULTS -->
@@ -454,10 +450,12 @@ const VID_QS=[
    opts:['ARPANET','World Wide Web','IA Generativa','Computación cuántica'],ans:2,
    label:'IA Generativa — 2022'},
 ];
-// RONDA 3 — rompecabezas — misma imagen en host y player
-const PUZZLE_IMG='imagen/imagen16.jpg'; // ENIAC
-const PUZZLE_LABEL='ENIAC — Primera Computadora, 1945';
-const PUZZLE={img:PUZZLE_IMG,label:PUZZLE_LABEL,cols:2,rows:2};
+// RONDA 3 — rompecabezas — 2 puzzles en secuencia
+const PUZZLES=[
+  {img:'imagen/imagen16.jpg', label:'ENIAC — Primera Computadora, 1945', cols:2, rows:2, time:10},
+  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:20},
+];
+let puzzleIdx=0;
 // RONDA 4 — ahorcado sin timer
 const HM_WORDS=[
   {word:'ALGORITMO',hint:'Término que viene del nombre de Al-Juarismi',pts:400},
@@ -543,9 +541,8 @@ function listenGame(){
     const room=snap.val();
     const st=room.status,ph=room.phase||'',cq=room.currentQ;
     const hmwi=room.hmWordIdx!==undefined?room.hmWordIdx:0;
-    // for hm-update always process (don't deduplicate)
-    const key=st==='hm-update'?`hm-update-${Date.now()}`:`${st}|${ph}|${cq}|${hmwi}`;
-    if(key===lastStatus&&st!=='hm-update')return;
+    const key=`${st}|${ph}|${cq}|${hmwi}`;
+    if(key===lastStatus)return;
     lastStatus=key;
     if(st==='round-intro'){showRoundIntroPlayer(room)}
     else if(st==='playing-img'){showImgQPlayer(cq)}
@@ -553,12 +550,10 @@ function listenGame(){
     else if(st==='results'){showPlayerResult(room)}
     else if(st==='puzzle'){showPuzzlePlayer()}
     else if(st==='hangman'){
-      // only show initial hangman screen on NEW word, not on every letter update
-      showHangmanPlayer(room);
+      if(!isHost) showHangmanPlayer(room);
     }
     else if(st==='hm-update'){
-      // letter was processed — just update the display, don't re-render screen
-      updateHangmanPlayer(room);
+      if(!isHost) updateHangmanPlayer(room);
     }
     else if(st==='podium'){showPodium(room)}
   });
@@ -650,14 +645,17 @@ function showVidQPlayer(idx){
 ══════════════════════ */
 function startRound3(){
   setNebula('rgba(76,175,125,.18)');
+  puzzleIdx=0;
   update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'pz',currentQ:0});
-  showRoundIntro(3,'Rompecabezas','Cada grupo arma la imagen histórica',()=>startPuzzleHost());
+  showRoundIntro(3,'Rompecabezas','Cada grupo arma la imagen histórica',()=>startPuzzleHost(0));
 }
 
-function startPuzzleHost(){
+function startPuzzleHost(pIdx){
+  puzzleIdx=pIdx;
+  const pz=PUZZLES[pIdx];
   clearInterval(timerInterval);
-  timeLeft=20;
-  update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:0,puzzleImg:PUZZLE.img,puzzleLabel:PUZZLE.label,puzzleSolved:{},timeLeft:20});
+  timeLeft=pz.time;
+  update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:pIdx,puzzleImg:pz.img,puzzleLabel:pz.label,puzzleCols:pz.cols,puzzleRows:pz.rows,puzzleSolved:{},timeLeft:pz.time});
   buildPuzzleHost();
   show('sc-pzhost');
   document.getElementById('pzh-label').textContent=PUZZLE.label;
@@ -806,127 +804,82 @@ function startRound4(){
   showRoundIntro(4,'Ahorcado','Propongan letras desde su dispositivo — 3 palabras',()=>startHangmanWord(0));
 }
 
+/* ══════════════════════
+   RONDA 4 — AHORCADO
+   - Cada jugador tiene su propio estado local
+   - Host observa en tiempo real el estado de cada equipo
+   - Players escriben letras individualmente
+══════════════════════ */
+const HM_PLAYER_PARTS=['hmp-head','hmp-body','hmp-la','hmp-ra','hmp-ll','hmp-rl'];
+
 function startHangmanWord(wIdx){
   if(wIdx>=HM_WORDS.length){endHangman();return}
-  hmWordIdx=wIdx;hmMisses=0;
+  hmWordIdx=wIdx;
   const w=HM_WORDS[wIdx];
-  hmRevealed=Array(w.word.length).fill(false);
-  hmUsed=[];
-  const state={status:'hangman',phase:'hm',currentQ:wIdx,hmWordIdx:wIdx,hmWord:w.word,hmHint:w.hint,hmRevealed:hmRevealed.map(()=>false),hmMisses:0,hmUsed:[],hmActive:true};
-  update(ref(db,`rooms/${roomCode}`),state);
-  buildHangmanHost(w);
+  // publish new word to Firebase — players listen and reset their own state
+  update(ref(db,`rooms/${roomCode}`),{
+    status:'hangman',phase:'hm',currentQ:wIdx,hmWordIdx:wIdx,
+    hmWord:w.word,hmHint:w.hint,hmActive:true
+  });
+  // clear all player hangman states for new word
+  remove(ref(db,`rooms/${roomCode}/hmStates`));
+  buildHangmanHostDashboard(w);
   show('sc-hmhost');
-  // no timer — host advances manually when word is solved or gives up
   clearInterval(timerInterval);
-  document.getElementById('hm-timer').style.display='none';
-  document.getElementById('hm-pf').parentElement.style.display='none';
-  // listen for letter proposals
-  addL(ref(db,`rooms/${roomCode}/hmProposals`),snap=>{
-    if(!snap.exists())return;
-    const props=snap.val()||{};
-    const list=document.getElementById('hmh-proposals');list.innerHTML='';
-    Object.values(props).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,8).forEach(p=>{
-      const div=document.createElement('div');div.className='hmprop';
-      div.innerHTML=`<span class="hmprop-name">${p.name}</span><span>propone:</span><span style="color:var(--text);font-weight:700">${p.letter}</span>`;
-      list.appendChild(div);
-    });
-    // auto-process latest proposal
-    const latest=Object.values(props).sort((a,b)=>(b.ts||0)-(a.ts||0))[0];
-    if(latest&&!hmUsed.includes(latest.letter)){
-      processLetter(latest.letter);
-    }
+  // host listens to all players' individual states
+  addL(ref(db,`rooms/${roomCode}/hmStates`),snap=>{
+    updateHostDashboard(snap.val()||{},w);
   });
 }
 
-function buildHangmanHost(w){
-  // word display
+function buildHangmanHostDashboard(w){
+  // word display (blanks)
   const wDiv=document.getElementById('hmh-word');wDiv.innerHTML='';
-  w.word.split('').forEach((l,i)=>{
-    const span=document.createElement('div');span.className='hmltr hidden';span.id=`hml-${i}`;span.textContent=l;wDiv.appendChild(span);
+  w.word.split('').forEach(()=>{
+    const span=document.createElement('div');span.className='hmltr';span.textContent='_';wDiv.appendChild(span);
   });
-  document.getElementById('hmh-letters').innerHTML='';
-  document.getElementById('hmh-proposals').innerHTML='';
-  document.getElementById('hmh-status').textContent='';
+  document.getElementById('hmh-status').textContent=`Pista: ${w.hint}`;
   document.getElementById('hmh-status').className='hmh-status';
-  HM_PARTS.forEach(id=>document.getElementById(id).setAttribute('opacity','0'));
+  document.getElementById('hm-wordlbl').textContent=`Palabra ${hmWordIdx+1} / ${HM_WORDS.length}`;
   document.getElementById('hm-nextword').style.display='none';
   document.getElementById('hm-finish').style.display='none';
+  document.getElementById('hm-teams-grid').innerHTML='';
 }
 
-function processLetter(letter){
-  letter=letter.toUpperCase();
-  if(hmUsed.includes(letter))return;
-  hmUsed.push(letter);
-  const w=HM_WORDS[hmWordIdx].word;
-  let hit=false;
-  w.split('').forEach((l,i)=>{if(l===letter){hmRevealed[i]=true;hit=true}});
-  if(!hit)hmMisses++;
-  // use hm-update status so player only updates display without re-rendering
-  update(ref(db,`rooms/${roomCode}`),{status:'hm-update',hmRevealed,hmMisses,hmUsed});
-  updateHangmanHostUI();
-  checkHangmanEnd();
-}
-
-function updateHangmanHostUI(){
-  const w=HM_WORDS[hmWordIdx];
-  // letters
-  w.word.split('').forEach((l,i)=>{
-    const el=document.getElementById(`hml-${i}`);
-    if(el&&hmRevealed[i])el.classList.remove('hidden');
-  });
-  // body parts
-  for(let i=0;i<hmMisses&&i<HM_PARTS.length;i++)document.getElementById(HM_PARTS[i]).setAttribute('opacity','1');
-  // used letters panel
-  const ul=document.getElementById('hmh-letters');ul.innerHTML='';
-  hmUsed.forEach(l=>{
-    const span=document.createElement('div');span.className='hmlbl';
-    span.textContent=l;
-    span.classList.add(w.word.includes(l)?'hit':'miss');
-    ul.appendChild(span);
-  });
-}
-
-function checkHangmanEnd(){
-  const w=HM_WORDS[hmWordIdx];
-  const allRevealed=hmRevealed.every(v=>v);
-  const dead=hmMisses>=HM_PARTS.length;
-  if(allRevealed||dead){
-    clearInterval(timerInterval);
-    const st=document.getElementById('hmh-status');
-    if(allRevealed){st.textContent='¡Palabra adivinada!';st.className='hmh-status won'}
-    else{
-      st.textContent=`Era: ${w.word}`;st.className='hmh-status lost';
-      // reveal all
-      w.word.split('').forEach((l,i)=>{const el=document.getElementById(`hml-${i}`);if(el)el.classList.remove('hidden')});
+function updateHostDashboard(states,w){
+  const grid=document.getElementById('hm-teams-grid');
+  // build/update one card per team
+  Object.entries(states).forEach(([pKey,pState])=>{
+    const lives=Math.max(0,HM_PARTS.length-(pState.misses||0));
+    const won=pState.won||false;
+    const dead=lives<=0&&!won;
+    let card=document.getElementById(`htc-${pKey}`);
+    if(!card){
+      card=document.createElement('div');card.className='hm-team-card';card.id=`htc-${pKey}`;
+      grid.appendChild(card);
     }
+    card.className=`hm-team-card${won?' won':dead?' dead':''}`;
+    const hearts='♥'.repeat(lives)+'♡'.repeat(HM_PARTS.length-lives);
+    card.innerHTML=`
+      <div class="hm-tc-name">${pState.name||'?'}</div>
+      <div class="hm-tc-hearts" style="color:${won?'var(--green)':dead?'var(--red)':'var(--gold)'}">${hearts}</div>
+      <div class="hm-tc-lives">${lives} vida${lives!==1?'s':''}</div>
+      <div class="hm-tc-status" style="color:${won?'var(--green)':dead?'var(--red)':'var(--faint)'}">${won?'ADIVINÓ':dead?'ELIMINADO':'jugando...'}</div>`;
+  });
+  // check if all done
+  const vals=Object.values(states);
+  if(vals.length>0&&vals.every(p=>p.won||(p.misses||0)>=HM_PARTS.length)){
     setTimeout(()=>{
       const isLast=hmWordIdx>=HM_WORDS.length-1;
-      if(isLast)document.getElementById('hm-finish').style.display='inline-flex';
-      else document.getElementById('hm-nextword').style.display='inline-flex';
-    },1500);
+      document.getElementById(isLast?'hm-finish':'hm-nextword').style.display='inline-flex';
+    },1000);
   }
 }
 
-function revealHangmanWord(){
-  const w=HM_WORDS[hmWordIdx];
-  hmRevealed=hmRevealed.map(()=>true);
-  update(ref(db,`rooms/${roomCode}`),{hmRevealed});
-  updateHangmanHostUI();
-  const st=document.getElementById('hmh-status');st.textContent=`Tiempo agotado — era: ${w.word}`;st.className='hmh-status lost';
-  setTimeout(()=>{
-    const isLast=hmWordIdx>=HM_WORDS.length-1;
-    if(isLast)document.getElementById('hm-finish').style.display='inline-flex';
-    else document.getElementById('hm-nextword').style.display='inline-flex';
-  },1500);
-}
-
 document.getElementById('hm-nextword').onclick=()=>{
-  clearL();// clear proposal listener
-  listenGame();// re-attach game listener
-  remove(ref(db,`rooms/${roomCode}/hmProposals`));
   startHangmanWord(hmWordIdx+1);
 };
-document.getElementById('hm-finish').onclick=()=>{endHangman()};
+document.getElementById('hm-finish').onclick=()=>endHangman();
 
 async function endHangman(){
   clearInterval(timerInterval);
@@ -936,47 +889,98 @@ async function endHangman(){
   buildPodium(players);launchConfetti();show('sc-pod');
 }
 
-/* HANGMAN PLAYER */
+/* ── HANGMAN PLAYER — individual state ── */
+// each player manages their OWN local hangman state
+let hmpRevealed=[],hmpMisses=0,hmpUsed=[],hmpWon=false,hmpDead=false;
+
 function showHangmanPlayer(room){
-  updateHangmanPlayer(room);
+  if(isHost)return; // host never shows player screen
+  // reset individual state for new word
+  hmpRevealed=Array(room.hmWord.length).fill(false);
+  hmpMisses=0;hmpUsed=[];hmpWon=false;hmpDead=false;
+  hmWordIdx=room.hmWordIdx||0;
+  // reset gallows
+  HM_PLAYER_PARTS.forEach(id=>{const el=document.getElementById(id);if(el)el.setAttribute('opacity','0')});
+  document.getElementById('hmp-result').style.display='none';
+  document.getElementById('hmp-inp-row').style.display='flex';
   document.getElementById('hmp-inp').value='';
-  document.getElementById('hmp-inp').focus();
+  renderHangmanPlayer(room.hmWord,room.hmHint);
+  // push initial state to firebase so host sees this player
+  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:0,won:false});
   show('sc-hmplay');
+  setTimeout(()=>document.getElementById('hmp-inp').focus(),300);
 }
+
 function updateHangmanPlayer(room){
-  if(!room.hmWord)return;
-  const word=room.hmWord;
-  const revealed=room.hmRevealed||[];
-  const misses=room.hmMisses||0;
-  const used=room.hmUsed||[];
-  // word display
+  // called on hm-update — but now players manage themselves, nothing to sync from host
+  // just keep word visible in case it refreshed
+  if(!isHost&&room.hmWord){
+    const wDiv=document.getElementById('hmp-word');
+    if(wDiv.children.length===0) renderHangmanPlayer(room.hmWord,room.hmHint);
+  }
+}
+
+function renderHangmanPlayer(word,hint){
   const wDiv=document.getElementById('hmp-word');wDiv.innerHTML='';
   word.split('').forEach((l,i)=>{
-    const span=document.createElement('div');span.className='hmp-ltr'+(revealed[i]?'':' hidden');span.textContent=l;wDiv.appendChild(span);
+    const span=document.createElement('div');
+    span.className='hmp-ltr'+(hmpRevealed[i]?'':' hidden');
+    span.textContent=l;span.id=`hmpL-${i}`;wDiv.appendChild(span);
   });
-  document.getElementById('hmp-hint').textContent=`Pista: ${room.hmHint||''}`;
-  document.getElementById('hmp-lives').textContent=Math.max(0,HM_PARTS.length-misses);
-  document.getElementById('hmp-used').textContent=used.length?`Usadas: ${used.join(', ')}`:'Ninguna aún';
+  document.getElementById('hmp-hint').textContent=`Pista: ${hint}`;
+  document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
+  document.getElementById('hmp-used').textContent=hmpUsed.length?`Letras: ${hmpUsed.join(' · ')}`:'Ninguna aún';
 }
+
 document.getElementById('hmp-send').onclick=sendHangmanLetter;
 document.getElementById('hmp-inp').onkeydown=e=>{if(e.key==='Enter')sendHangmanLetter()};
+
 async function sendHangmanLetter(){
+  if(hmpWon||hmpDead)return;
   const inp=document.getElementById('hmp-inp');
   const letter=inp.value.trim().toUpperCase();
-  if(!letter||!/[A-ZÁÉÍÓÚÑ]/.test(letter))return;
+  if(!letter||!/[A-ZÁÉÍÓÚÑ]/.test(letter)||hmpUsed.includes(letter)){inp.value='';return}
   inp.value='';
-  // send to firebase
-  const pRef=push(ref(db,`rooms/${roomCode}/hmProposals`));
-  await set(pRef,{name:playerName,letter,ts:Date.now()});
-  // small pts for participating
-  get(ref(db,`rooms/${roomCode}/players/${playerKey}`)).then(snap=>{
-    const p=snap.val()||{};
-    const w=HM_WORDS[hmWordIdx];
-    if(w&&w.word.includes(letter)){
-      const total=(p.score||0)+Math.floor(w.pts/w.word.split('').filter(l=>l===letter).length);
-      update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:total});
-    }
+  hmpUsed.push(letter);
+  // get current word from Firebase
+  const snap=await get(ref(db,`rooms/${roomCode}/hmWord`));
+  const word=snap.val()||'';
+  let hit=false;
+  word.split('').forEach((l,i)=>{if(l===letter){hmpRevealed[i]=true;hit=true}});
+  if(!hit) hmpMisses++;
+  // update gallows
+  for(let i=0;i<hmpMisses&&i<HM_PLAYER_PARTS.length;i++){
+    const el=document.getElementById(HM_PLAYER_PARTS[i]);if(el)el.setAttribute('opacity','1');
+  }
+  // update word display
+  word.split('').forEach((l,i)=>{
+    const el=document.getElementById(`hmpL-${i}`);
+    if(el&&hmpRevealed[i])el.classList.remove('hidden');
   });
+  document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
+  document.getElementById('hmp-used').textContent=`Letras: ${hmpUsed.join(' · ')}`;
+  // check win/lose
+  hmpWon=word.split('').every((_,i)=>hmpRevealed[i]);
+  hmpDead=hmpMisses>=HM_PLAYER_PARTS.length;
+  // push state to host dashboard
+  await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:hmpMisses,won:hmpWon});
+  if(hmpWon||hmpDead){
+    document.getElementById('hmp-inp-row').style.display='none';
+    const res=document.getElementById('hmp-result');res.style.display='block';
+    if(hmpWon){
+      res.textContent='¡Adivinaste!';res.style.color='var(--green)';
+      // pts = vidas restantes * 100
+      const lives=HM_PLAYER_PARTS.length-hmpMisses;
+      const pts=lives*100;
+      const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
+      const p=pSnap.val()||{};
+      await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+pts,[`pts/hm_${hmWordIdx}`]:pts});
+    } else {
+      res.textContent=`La palabra era: ${word}`;res.style.color='var(--red)';
+      // reveal all
+      word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
+    }
+  }
 }
 
 /* ══ SHARED HELPERS ══ */
