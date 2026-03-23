@@ -478,11 +478,11 @@ const VID_QS=[
 // RONDA 3 — rompecabezas — 2 puzzles en secuencia
 const PUZZLES=[
   {img:'imagen/imagen16.jpg', label:'ENIAC — Primera Computadora, 1945', cols:2, rows:2, time:10},
-  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:30},
+  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:45},
 ];
 let puzzleIdx=0;
-// RONDA 4 — ahorcado con timer de 40s por palabra
-const HM_TIME=40;
+// RONDA 4 — ahorcado 20s por palabra
+const HM_TIME=20;
 const HM_WORDS=[
   {word:'ALGORITMO',hint:'Término que viene del nombre de Al-Juarismi',pts:400},
   {word:'HELIOCENTRISMO',hint:'Modelo donde el Sol está en el centro',pts:500},
@@ -516,7 +516,29 @@ function clearL(){fbL.forEach(([r,fn])=>off(r,fn));fbL=[]}
 function setNebula(col){document.getElementById('nbg').style.background=`radial-gradient(ellipse 60% 40% at 50%50%,${col} 0%,transparent 65%)`}
 
 /* ══ LANDING ══ */
-document.getElementById('btn-host').onclick=()=>{
+document.getElementById('btn-host').onclick=async()=>{
+  // check if there's already an active room
+  const activeSnap=await get(ref(db,'rooms'));
+  if(activeSnap.exists()){
+    const rooms=activeSnap.val();
+    const active=Object.values(rooms).find(r=>r.status&&r.status!=='podium');
+    if(active){
+      document.getElementById('btn-host').textContent='Juego en curso — esperá...';
+      document.getElementById('btn-host').style.opacity='0.5';
+      document.getElementById('btn-host').style.pointerEvents='none';
+      // poll until room is gone
+      const poll=setInterval(async()=>{
+        const s=await get(ref(db,'rooms'));
+        if(!s.exists()||Object.values(s.val()).every(r=>!r.status||r.status==='podium')){
+          clearInterval(poll);
+          document.getElementById('btn-host').textContent='Soy el presentador';
+          document.getElementById('btn-host').style.opacity='1';
+          document.getElementById('btn-host').style.pointerEvents='auto';
+        }
+      },3000);
+      return;
+    }
+  }
   isHost=true;roomCode=genCode();
   set(ref(db,`rooms/${roomCode}`),{status:'lobby',phase:'',currentQ:-1,players:{}});
   document.getElementById('lh-code').textContent=roomCode;
@@ -773,44 +795,62 @@ function showPuzzlePlayer(){
 }
 
 function _buildPuzzlePlayer(img,cols,rows){
-  const maxSide=Math.min(innerWidth*.9,innerHeight*.42,280);
-  const pw=Math.floor(maxSide/cols);
-  const ph=Math.floor(maxSide/rows);
-  const bw=pw*cols;const bh=ph*rows;
-  const total=cols*rows;
-  pzPieces=[];
-  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) pzPieces.push({r,c});
-  pzPieces.sort(()=>Math.random()-.5);
-  pzSolved=0;
-  const board=document.getElementById('pzp-board');board.innerHTML='';
-  board.style.cssText=`display:grid;grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:2px`;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const slot=document.createElement('div');slot.className='pzp-slot';
-      slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative`;
-      slot.dataset.r=r;slot.dataset.c=c;
-      const lbl=document.createElement('span');
-      lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none';
-      lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
-      slot.addEventListener('dragover',e=>e.preventDefault());
-      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,bw,bh)});
-      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,bw,bh)},{passive:false});
-      board.appendChild(slot);
+  // preload image to get real dimensions for perfect cuts
+  const image=new Image();
+  image.onload=()=>{
+    const ratio=image.naturalWidth/image.naturalHeight;
+    // piece size — square grid that fits screen
+    const maxW=Math.min(innerWidth*.88,340);
+    const maxH=Math.min(innerHeight*.40,260);
+    // fit to screen keeping ratio
+    let bw=maxW,bh=bw/ratio;
+    if(bh>maxH){bh=maxH;bw=bh*ratio}
+    bw=Math.floor(bw);bh=Math.floor(bh);
+    const pw=Math.floor(bw/cols);
+    const ph=Math.floor(bh/rows);
+    // use exact multiples so no gaps
+    const exactW=pw*cols;const exactH=ph*rows;
+    const total=cols*rows;
+    pzPieces=[];
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) pzPieces.push({r,c});
+    pzPieces.sort(()=>Math.random()-.5);
+    pzSolved=0;
+    const board=document.getElementById('pzp-board');board.innerHTML='';
+    board.style.cssText=`display:grid;grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:2px`;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const slot=document.createElement('div');slot.className='pzp-slot';
+        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative`;
+        slot.dataset.r=r;slot.dataset.c=c;
+        const lbl=document.createElement('span');
+        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:9px;color:rgba(255,255,255,.2);pointer-events:none';
+        lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
+        slot.addEventListener('dragover',e=>e.preventDefault());
+        slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,exactW,exactH)});
+        slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,exactW,exactH)},{passive:false});
+        board.appendChild(slot);
+      }
     }
-  }
-  const tray=document.getElementById('pzp-tray');tray.innerHTML='';
-  tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${bw+20}px`;
-  pzPieces.forEach(p=>{
-    const piece=document.createElement('div');piece.className='pzp-piece';
-    piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${bw}px ${bh}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:grab;border:1px solid rgba(255,255,255,.25)`;
-    piece.dataset.r=p.r;piece.dataset.c=p.c;piece.draggable=true;
-    piece.addEventListener('dragstart',()=>{window._dragPiece=piece;piece.style.opacity='.4'});
-    piece.addEventListener('dragend',()=>{piece.style.opacity='1'});
-    piece.addEventListener('touchstart',()=>{window._dragPiece=piece},{passive:true});
-    tray.appendChild(piece);
-  });
-  document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
-  show('sc-pzplay');
+    const tray=document.getElementById('pzp-tray');tray.innerHTML='';
+    tray.style.cssText=`display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:${exactW+20}px`;
+    pzPieces.forEach(p=>{
+      const piece=document.createElement('div');piece.className='pzp-piece';
+      // background-size = full image scaled to exactW×exactH, position cuts out this piece
+      piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:grab;border:1px solid rgba(255,255,255,.22)`;
+      piece.dataset.r=p.r;piece.dataset.c=p.c;piece.draggable=true;
+      piece.addEventListener('dragstart',()=>{window._dragPiece=piece;piece.style.opacity='.4'});
+      piece.addEventListener('dragend',()=>{piece.style.opacity='1'});
+      piece.addEventListener('touchstart',()=>{window._dragPiece=piece},{passive:true});
+      tray.appendChild(piece);
+    });
+    document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
+    show('sc-pzplay');
+  };
+  image.onerror=()=>{
+    // fallback sin imagen
+    _buildPuzzlePlayer(PUZZLES[0].img,cols,rows);
+  };
+  image.src=img;
 }
 
 let _dragPiece=null;
