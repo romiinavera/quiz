@@ -433,18 +433,32 @@ const app=initializeApp(FB);const db=getDatabase(app);
 
 /* ══ DATA ══ */
 // RONDA 1 — imagen misteriosa (2 imágenes, 7s)
+// imagen11 = Máquina de vapor → A=0 ✓
+// imagen16 = ENIAC → B=1 ✓
 const IMG_QS=[
-  {q:'¿Qué invento histórico muestra esta imagen?',img:'imagen/imagen11.jpg',opts:['Máquina de vapor','Locomotora a vapor','Motor de combustión','Generador eléctrico'],ans:0,label:'Máquina de Vapor — James Watt, 1769'},
-  {q:'¿Qué representa esta imagen histórica?',img:'imagen/imagen16.jpg',opts:['Primer satélite','ENIAC — primera computadora','Primer servidor web','Centro de control NASA'],ans:1,label:'ENIAC — Primera Computadora, 1945'},
+  {q:'¿Qué invento histórico muestra esta imagen?',img:'imagen/imagen11.jpg',
+   opts:['Máquina de vapor','Locomotora a vapor','Motor de combustión','Generador eléctrico'],ans:0,
+   label:'Máquina de Vapor — James Watt, 1769'},
+  {q:'¿Qué representa esta imagen histórica?',img:'imagen/imagen16.jpg',
+   opts:['Primer satélite','ENIAC — primera computadora','Primer servidor web','Centro de control NASA'],ans:1,
+   label:'ENIAC — Primera Computadora, 1945'},
 ];
 // RONDA 2 — adivina el video (2 videos, 7s)
+// video1 = La Rueda → A=0 ✓
+// video13 = IA Generativa → C=2 ✓
 const VID_QS=[
-  {q:'¿Qué invento histórico muestra este video?',vid:'video/video1.mp4',opts:['La rueda','El arado','La palanca','El eje'],ans:0,label:'La Rueda — Mesopotamia, ~3500 a.C.'},
-  {q:'¿Qué tecnología representa este video?',vid:'video/video13.mp4',opts:['ARPANET','World Wide Web','IA Generativa','Computación cuántica'],ans:2,label:'IA Generativa — 2022'},
+  {q:'¿Qué invento histórico muestra este video?',vid:'video/video1.mp4',
+   opts:['La rueda','El arado','La palanca','El eje'],ans:0,
+   label:'La Rueda — Mesopotamia, ~3500 a.C.'},
+  {q:'¿Qué tecnología representa este video?',vid:'video/video13.mp4',
+   opts:['ARPANET','World Wide Web','IA Generativa','Computación cuántica'],ans:2,
+   label:'IA Generativa — 2022'},
 ];
-// RONDA 3 — rompecabezas (1 imagen, 4 piezas 2x2, 20s)
-const PUZZLE={img:'imagen/imagen11.jpg',label:'Máquina de Vapor — Revolución Industrial',cols:2,rows:2};
-// RONDA 4 — ahorcado sin timer (el presentador avanza manualmente)
+// RONDA 3 — rompecabezas — misma imagen en host y player
+const PUZZLE_IMG='imagen/imagen16.jpg'; // ENIAC
+const PUZZLE_LABEL='ENIAC — Primera Computadora, 1945';
+const PUZZLE={img:PUZZLE_IMG,label:PUZZLE_LABEL,cols:2,rows:2};
+// RONDA 4 — ahorcado sin timer
 const HM_WORDS=[
   {word:'ALGORITMO',hint:'Término que viene del nombre de Al-Juarismi',pts:400},
   {word:'HELIOCENTRISMO',hint:'Modelo donde el Sol está en el centro',pts:500},
@@ -528,16 +542,24 @@ function listenGame(){
     if(!snap.exists())return;
     const room=snap.val();
     const st=room.status,ph=room.phase||'',cq=room.currentQ;
-    const key=`${st}|${ph}|${cq}`;
-    if(key===lastStatus)return;
+    const hmwi=room.hmWordIdx!==undefined?room.hmWordIdx:0;
+    // for hm-update always process (don't deduplicate)
+    const key=st==='hm-update'?`hm-update-${Date.now()}`:`${st}|${ph}|${cq}|${hmwi}`;
+    if(key===lastStatus&&st!=='hm-update')return;
     lastStatus=key;
     if(st==='round-intro'){showRoundIntroPlayer(room)}
     else if(st==='playing-img'){showImgQPlayer(cq)}
     else if(st==='playing-vid'){showVidQPlayer(cq)}
     else if(st==='results'){showPlayerResult(room)}
     else if(st==='puzzle'){showPuzzlePlayer()}
-    else if(st==='hangman'){showHangmanPlayer(room)}
-    else if(st==='hm-update'){updateHangmanPlayer(room)}
+    else if(st==='hangman'){
+      // only show initial hangman screen on NEW word, not on every letter update
+      showHangmanPlayer(room);
+    }
+    else if(st==='hm-update'){
+      // letter was processed — just update the display, don't re-render screen
+      updateHangmanPlayer(room);
+    }
     else if(st==='podium'){showPodium(room)}
   });
 }
@@ -709,14 +731,20 @@ async function showPuzzleResults(){
 }
 
 function showPuzzlePlayer(){
+  // read puzzle image from Firebase to ensure it matches host
+  get(ref(db,`rooms/${roomCode}/puzzleImg`)).then(snap=>{
+    const img=snap.val()||PUZZLE.img;
+    _buildPuzzlePlayer(img);
+  });
+}
+
+function _buildPuzzlePlayer(img){
   const size=Math.min(innerWidth*.85,280);
   const pw=size/PUZZLE.cols,ph=size/PUZZLE.rows;
   const total=PUZZLE.cols*PUZZLE.rows;
-  // build shuffled pieces array
   pzPieces=[];for(let r=0;r<PUZZLE.rows;r++)for(let c=0;c<PUZZLE.cols;c++)pzPieces.push({r,c});
   pzPieces.sort(()=>Math.random()-.5);
   pzSolved=0;
-  // build slots grid
   const board=document.getElementById('pzp-board');board.innerHTML='';
   board.style.cssText=`grid-template-columns:repeat(${PUZZLE.cols},${pw}px);grid-template-rows:repeat(${PUZZLE.rows},${ph}px);gap:3px`;
   for(let r=0;r<PUZZLE.rows;r++){
@@ -725,17 +753,15 @@ function showPuzzlePlayer(){
       slot.style.cssText=`width:${pw}px;height:${ph}px`;
       slot.dataset.r=r;slot.dataset.c=c;
       slot.addEventListener('dragover',e=>{e.preventDefault()});
-      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot)});
-      // touch
-      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot)},{passive:false});
+      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img)});
+      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img)},{passive:false});
       board.appendChild(slot);
     }
   }
-  // build tray of pieces
   const tray=document.getElementById('pzp-tray');tray.innerHTML='';
   pzPieces.forEach(p=>{
     const piece=document.createElement('div');piece.className='pzp-piece';
-    piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url(${PUZZLE.img});background-size:${size}px ${size*PUZZLE.rows/PUZZLE.cols}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0`;
+    piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url(${img});background-size:${size}px ${size}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0`;
     piece.dataset.r=p.r;piece.dataset.c=p.c;
     piece.draggable=true;
     piece.addEventListener('dragstart',()=>{window._dragPiece=piece});
@@ -747,7 +773,7 @@ function showPuzzlePlayer(){
 }
 
 let _dragPiece=null;
-function dropOnSlot(slot){
+function dropOnSlot(slot,img){
   const piece=window._dragPiece;if(!piece)return;
   const sr=parseInt(slot.dataset.r),sc=parseInt(slot.dataset.c);
   const pr=parseInt(piece.dataset.r),pc=parseInt(piece.dataset.c);
@@ -786,7 +812,7 @@ function startHangmanWord(wIdx){
   const w=HM_WORDS[wIdx];
   hmRevealed=Array(w.word.length).fill(false);
   hmUsed=[];
-  const state={status:'hangman',phase:'hm',currentQ:wIdx,hmWord:w.word,hmHint:w.hint,hmRevealed:hmRevealed.map(()=>false),hmMisses:0,hmUsed:[],hmActive:true,timeLeft:120};
+  const state={status:'hangman',phase:'hm',currentQ:wIdx,hmWordIdx:wIdx,hmWord:w.word,hmHint:w.hint,hmRevealed:hmRevealed.map(()=>false),hmMisses:0,hmUsed:[],hmActive:true};
   update(ref(db,`rooms/${roomCode}`),state);
   buildHangmanHost(w);
   show('sc-hmhost');
@@ -835,9 +861,8 @@ function processLetter(letter){
   let hit=false;
   w.split('').forEach((l,i)=>{if(l===letter){hmRevealed[i]=true;hit=true}});
   if(!hit)hmMisses++;
-  // update firebase
-  update(ref(db,`rooms/${roomCode}`),{hmRevealed,hmMisses,hmUsed});
-  // update host UI
+  // use hm-update status so player only updates display without re-rendering
+  update(ref(db,`rooms/${roomCode}`),{status:'hm-update',hmRevealed,hmMisses,hmUsed});
   updateHangmanHostUI();
   checkHangmanEnd();
 }
