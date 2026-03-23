@@ -608,6 +608,7 @@ function listenGame(){
     else if(st==='playing-vid'){showVidQPlayer(cq)}
     else if(st==='results'){showPlayerResult(room)}
     else if(st==='puzzle'){showPuzzlePlayer()}
+    else if(st==='puzzle-end'){if(!isHost)lockPuzzlePlayer()}
     else if(st==='hangman'){if(!isHost)showHangmanPlayer(room)}
     else if(st==='hm-update'){if(!isHost)updateHangmanPlayer(room)}
     else if(st==='podium'){showPodium(room)}
@@ -675,7 +676,9 @@ function startVidQ(idx){
   document.getElementById('qh-recv').textContent='0 respuestas';
   document.getElementById('im-wrap').style.display='none';
   document.getElementById('vid-wrap').style.display='block';
-  const vid=document.getElementById('rvid');vid.src=q.vid;vid.load();vid.play().catch(()=>{});
+  const vid=document.getElementById('rvid');
+  vid.muted=true;vid.src=q.vid;vid.load();
+  vid.play().then(()=>{vid.muted=false}).catch(()=>{vid.muted=false;vid.play().catch(()=>{})});
   const mask=document.getElementById('vmask');mask.classList.remove('gone');
   setTimeout(()=>mask.classList.add('gone'),5000);
   buildAnsGrid(q.opts,idx,'vid');
@@ -732,7 +735,11 @@ function startPuzzleHost(pIdx){
     document.getElementById('pz-timer').textContent=timeLeft;
     document.getElementById('pz-timer').classList.toggle('hot',timeLeft<=5);
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
-    if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      update(ref(db,`rooms/${roomCode}`),{status:'puzzle-end',phase:'pz',currentQ:pIdx});
+      endPuzzle(pIdx);
+    }
   },1000);
   // guardar solved silenciosamente para mostrarlo al final
   addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{window._lastPuzzleSolved=snap.val()||{}});
@@ -741,6 +748,8 @@ function startPuzzleHost(pIdx){
 
 function endPuzzle(pIdx){
   clearInterval(timerInterval);
+  // push puzzle-end to Firebase to lock all player boards
+  if(isHost)update(ref(db,`rooms/${roomCode}`),{status:'puzzle-end',phase:'pz',currentQ:pIdx});
   const pz=PUZZLES[pIdx];
   const solved=window._lastPuzzleSolved||{};
   const total=pz.cols*pz.rows;
@@ -771,7 +780,7 @@ function endPuzzle(pIdx){
 document.getElementById('pz-next').onclick=()=>{
   const isLast=puzzleIdx>=PUZZLES.length-1;
   if(isLast){
-    update(ref(db,`rooms/${roomCode}`),{status:'results',phase:'pz',currentQ:puzzleIdx});
+    update(ref(db,`rooms/${roomCode}`),{status:'results',phase:'pz',currentQ:puzzleIdx});  // puzzle-end already sent
     showPuzzleResults();
   } else {
     const nextIdx=puzzleIdx+1;
@@ -782,10 +791,60 @@ document.getElementById('pz-next').onclick=()=>{
   }
 };
 
+function lockPuzzlePlayer(){
+  // deshabilitar toda interacción del rompecabezas
+  pzSelected=null;
+  document.getElementById('pz-ghost').style.display='none';
+  document.querySelectorAll('.pzp-piece').forEach(p=>p.style.pointerEvents='none');
+  document.querySelectorAll('.pzp-slot').forEach(s=>s.style.pointerEvents='none');
+  document.getElementById('pzp-status').textContent+=' — ¡Tiempo!';
+}
+
 async function showPuzzleResults(){
-  const snap=await get(ref(db,`rooms/${roomCode}/players`));
-  const players=Object.entries(snap.val()||{}).map(([k,v])=>({...v,key:k})).sort((a,b)=>b.score-a.score);
-  buildScoreList(players,'Ronda 3 — Rompecabezas','Resultados finales','');
+  const pIdx=puzzleIdx;
+  const pz=PUZZLES[pIdx];
+  const solvedSnap=await get(ref(db,`rooms/${roomCode}/puzzleSolved`));
+  const solved=solvedSnap.val()||{};
+  const total=pz.cols*pz.rows;
+  // count per player
+  const byPlayer={};
+  Object.entries(solved).forEach(([key,nm])=>{
+    if(!byPlayer[nm])byPlayer[nm]={cnt:0,keys:[]};
+    byPlayer[nm].cnt++;byPlayer[nm].keys.push(key);
+  });
+  // build custom results screen
+  document.getElementById('r-rnd').textContent='Ronda 3 — Rompecabezas';
+  document.getElementById('r-q').textContent=pz.label;
+  document.getElementById('r-badge').textContent=`${total} piezas en total`;
+  const sc=document.getElementById('r-scores');sc.innerHTML='';
+  // sorted by pieces desc
+  const sorted=Object.entries(byPlayer).sort((a,b)=>b[1].cnt-a[1].cnt);
+  sorted.forEach(([nm,data],i)=>{
+    const row=document.createElement('div');row.className=`srow ${i===0?'s1':i===1?'s2':i===2?'s3':''}`;
+    row.style.animationDelay=`${i*.07}s`;
+    row.style.alignItems='center';row.style.gap='12px';
+    // mini canvas showing solved pieces
+    const canvas=document.createElement('canvas');
+    const csize=48;canvas.width=csize;canvas.height=csize;canvas.style.cssText='flex-shrink:0;border:1px solid rgba(255,255,255,.15)';
+    const ctx2=canvas.getContext('2d');
+    const img2=new Image();
+    img2.onload=()=>{
+      const pw2=Math.floor(csize/pz.cols),ph2=Math.floor(csize/pz.rows);
+      data.keys.forEach(k=>{
+        const[r,cc]=k.split('_').map(Number);
+        ctx2.drawImage(img2,cc*(img2.width/pz.cols),r*(img2.height/pz.rows),img2.width/pz.cols,img2.height/pz.rows,cc*pw2,r*ph2,pw2,ph2);
+      });
+    };
+    img2.src=pz.img;
+    const pts=data.cnt*50;
+    row.innerHTML=`<span class="srk">${i+1}</span>`;
+    row.appendChild(canvas);
+    const info=document.createElement('span');info.className='snm';info.textContent=nm;row.appendChild(info);
+    const pzCnt=document.createElement('span');pzCnt.style.cssText='font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.2vw,11px);color:var(--dim)';pzCnt.textContent=`${data.cnt}/${total}`;row.appendChild(pzCnt);
+    const ptEl=document.createElement('span');ptEl.className='spt';ptEl.textContent=`+${pts}`;row.appendChild(ptEl);
+    sc.appendChild(row);
+  });
+  if(sorted.length===0)sc.innerHTML='<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)">Ningún grupo colocó piezas</div>';
   document.getElementById('btn-nxt').textContent='Ronda 4 — Ahorcado →';
   document.getElementById('btn-nxt').onclick=()=>startRound4();
   show('sc-res');
@@ -1134,9 +1193,11 @@ function showHangmanPlayer(room){
 function timeoutHangmanPlayer(word){
   hmpDead=true;disableKeyboard();
   const res=document.getElementById('hmp-result');res.style.display='block';
-  res.textContent=`Tiempo — era: ${word}`;res.style.color='var(--red)';
+  const hitsAcum=hmpRevealed.filter(Boolean).length;
+  const ptsTxt=hitsAcum>0?` (+${hitsAcum*50} por ${hitsAcum} letra${hitsAcum!==1?'s':''} correcta${hitsAcum!==1?'s':''})`:'';
+  res.innerHTML=`<span style="color:var(--red)">Tiempo — era: ${word}</span>${ptsTxt?`<br><span style="font-size:.75em;color:var(--gold)">${ptsTxt}</span>`:''}`;
   word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
-  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:HM_PLAYER_PARTS.length,won:false});
+  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:HM_PLAYER_PARTS.length,won:false,hits:hitsAcum});
 }
 
 function updateHangmanPlayer(room){
