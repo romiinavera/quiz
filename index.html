@@ -535,8 +535,12 @@ function listenPlayers(){
 }
 
 /* ══ LISTEN GAME (player) ══ */
+/* ══ LISTEN GAME (player) — listener persistente que nunca se limpia ══ */
+let gameListenerRef=null;
 function listenGame(){
-  addL(ref(db,`rooms/${roomCode}`),snap=>{
+  if(gameListenerRef)off(gameListenerRef); // limpiar solo el listener de juego previo
+  gameListenerRef=ref(db,`rooms/${roomCode}`);
+  onValue(gameListenerRef,snap=>{
     if(!snap.exists())return;
     const room=snap.val();
     const st=room.status,ph=room.phase||'',cq=room.currentQ;
@@ -549,12 +553,8 @@ function listenGame(){
     else if(st==='playing-vid'){showVidQPlayer(cq)}
     else if(st==='results'){showPlayerResult(room)}
     else if(st==='puzzle'){showPuzzlePlayer()}
-    else if(st==='hangman'){
-      if(!isHost) showHangmanPlayer(room);
-    }
-    else if(st==='hm-update'){
-      if(!isHost) updateHangmanPlayer(room);
-    }
+    else if(st==='hangman'){if(!isHost)showHangmanPlayer(room)}
+    else if(st==='hm-update'){if(!isHost)updateHangmanPlayer(room)}
     else if(st==='podium'){showPodium(room)}
   });
 }
@@ -655,11 +655,13 @@ function startPuzzleHost(pIdx){
   const pz=PUZZLES[pIdx];
   clearInterval(timerInterval);
   timeLeft=pz.time;
+  clearL(); // limpiar listeners viejos
   update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:pIdx,puzzleImg:pz.img,puzzleLabel:pz.label,puzzleCols:pz.cols,puzzleRows:pz.rows,puzzleSolved:{},timeLeft:pz.time});
   buildPuzzleHost(pz);
   show('sc-pzhost');
   document.getElementById('pzh-label').textContent=pz.label;
   document.getElementById('pz-next').style.display='none';
+  document.getElementById('pzh-info').textContent='Los grupos arman el rompecabezas desde su dispositivo';
   const pf=document.getElementById('pz-pf');
   pf.style.transition='none';pf.style.width='100%';
   setTimeout(()=>{pf.style.transition=`width ${pz.time}s linear`;pf.style.width='0%'},80);
@@ -671,12 +673,12 @@ function startPuzzleHost(pIdx){
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
     if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
+  // solo escuchar puzzleSolved para overlay
   addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
-    if(document.getElementById('sc-pzhost').classList.contains('active')){
-      const solved=snap.val()||{};
-      buildPuzzleHostOverlay(solved,pz);
-    }
+    buildPuzzleHostOverlay(snap.val()||{},pz);
   });
+  // re-escuchar jugadores para el lobby
+  listenPlayers();
 }
 
 function buildPuzzleHost(pz){
