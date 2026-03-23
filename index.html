@@ -449,7 +449,7 @@ function listenPlayers(){
     Object.values(pl).forEach(p=>{const c=document.createElement('div');c.className='pchip';c.textContent=p.name;list.appendChild(c)});
     document.getElementById('lh-count').textContent=`${cnt} jugador${cnt!==1?'es':''} conectado${cnt!==1?'s':''}`;
     const btn=document.getElementById('btn-startgame');
-    btn.disabled=cnt<1;btn.style.opacity=cnt>=1?'1':'0.38';
+    btn.disabled=false;btn.style.opacity='1';
   });
 }
 
@@ -488,7 +488,10 @@ function showRoundIntro(q,host){
   fill.style.transition='none';fill.style.width='0%';
   show('sc-round-intro');
   setTimeout(()=>{fill.style.transition='width 3s linear';fill.style.width='100%'},80);
-  if(host)setTimeout(()=>startQuestion(idx),3200);
+  if(host){
+    const idx=qIdx;
+    setTimeout(()=>startQuestion(idx),3400);
+  }
 }
 
 /* ══ START QUESTION (host) ══ */
