@@ -151,6 +151,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 #sc-hmhost{justify-content:flex-start;padding-top:clamp(14px,2.5vh,22px)}
 .hmh-top{display:flex;align-items:center;gap:clamp(8px,1.8vw,18px);width:100%;max-width:860px;flex-shrink:0}
 .hmh-body{display:flex;gap:clamp(16px,3vw,36px);align-items:flex-start;width:100%;max-width:860px;flex:1}
+/* puzzle group status rows */
+.pzg-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);margin-bottom:4px;transition:border-color .3s}
+.pzg-name{font-family:'Cinzel',serif;font-size:clamp(10px,1.4vw,13px);flex:1}
+.pzg-bar-wrap{width:clamp(80px,12vw,140px);height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.pzg-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease}
+.pzg-count{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);color:var(--gold);letter-spacing:.08em;white-space:nowrap}
+.pzg-row.done{border-color:var(--green)}.pzg-row.done .pzg-bar{background:var(--green)}
 /* hangman team cards */
 .hm-team-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.025);padding:clamp(8px,1.5vh,14px) clamp(10px,1.8vw,16px);display:flex;flex-direction:column;gap:4px;transition:border-color .3s,background .3s}
 .hm-team-card.won{border-color:var(--green);background:rgba(76,175,125,.08)}
@@ -324,17 +331,28 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   </div>
 </div>
 
-<!-- PUZZLE HOST -->
+<!-- PUZZLE HOST — solo observador, muestra imagen correcta + resultados por grupo -->
 <div class="sc" id="sc-pzhost">
   <div class="pzh-top">
-    <span class="qhmeta">Ronda 3 — Rompecabezas</span>
+    <span class="qhmeta" id="pzh-title">Ronda 3 — Rompecabezas</span>
     <div class="qhpbar"><div class="qhpfill" id="pz-pf" style="width:100%"></div></div>
     <div class="qhtimer" id="pz-timer">20</div>
   </div>
-  <div class="pzh-board" id="pzh-board"></div>
+  <div style="display:flex;gap:clamp(12px,2.5vw,28px);align-items:flex-start;width:100%;max-width:900px;flex-wrap:wrap;justify-content:center;flex:1">
+    <!-- imagen correcta de referencia -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)">Imagen correcta</div>
+      <img id="pzh-ref-img" src="" style="width:clamp(140px,22vw,240px);height:clamp(100px,16vw,180px);object-fit:cover;border:1px solid rgba(255,255,255,.15)" alt="">
+      <div class="pzh-label" id="pzh-label" style="font-size:clamp(9px,1.2vw,11px);color:var(--dim)"></div>
+    </div>
+    <!-- estado de grupos en tiempo real -->
+    <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Estado de grupos</div>
+      <div id="pzh-groups"></div>
+    </div>
+  </div>
   <div class="pzh-info" id="pzh-info">Los grupos arman el rompecabezas desde su dispositivo</div>
-  <div class="pzh-label" id="pzh-label"></div>
-  <button class="btn btn-g" id="pz-next" style="margin-top:6px;display:none">Ver resultados →</button>
+  <button class="btn btn-g" id="pz-next" style="margin-top:6px;display:none">Siguiente →</button>
 </div>
 
 <!-- PUZZLE PLAYER -->
@@ -655,13 +673,16 @@ function startPuzzleHost(pIdx){
   const pz=PUZZLES[pIdx];
   clearInterval(timerInterval);
   timeLeft=pz.time;
-  clearL(); // limpiar listeners viejos
+  clearL();
   update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:pIdx,puzzleImg:pz.img,puzzleLabel:pz.label,puzzleCols:pz.cols,puzzleRows:pz.rows,puzzleSolved:{},timeLeft:pz.time});
-  buildPuzzleHost(pz);
-  show('sc-pzhost');
+  // host UI — show reference image + group tracking
+  document.getElementById('pzh-title').textContent=`Rompecabezas ${pIdx+1}/${PUZZLES.length}`;
+  document.getElementById('pzh-ref-img').src=pz.img;
   document.getElementById('pzh-label').textContent=pz.label;
-  document.getElementById('pz-next').style.display='none';
+  document.getElementById('pzh-groups').innerHTML='';
   document.getElementById('pzh-info').textContent='Los grupos arman el rompecabezas desde su dispositivo';
+  document.getElementById('pz-next').style.display='none';
+  show('sc-pzhost');
   const pf=document.getElementById('pz-pf');
   pf.style.transition='none';pf.style.width='100%';
   setTimeout(()=>{pf.style.transition=`width ${pz.time}s linear`;pf.style.width='0%'},80);
@@ -673,45 +694,36 @@ function startPuzzleHost(pIdx){
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
     if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
-  // solo escuchar puzzleSolved para overlay
+  // listen to each player's solved pieces
   addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
     buildPuzzleHostOverlay(snap.val()||{},pz);
   });
-  // re-escuchar jugadores para el lobby
   listenPlayers();
 }
 
-function buildPuzzleHost(pz){
-  const board=document.getElementById('pzh-board');
-  const size=Math.min(innerWidth*.52,innerHeight*.52,460);
-  const pw=size/pz.cols,ph=size/pz.rows;
-  board.style.width=size+'px';board.style.height=size+'px';
-  board.style.gridTemplateColumns=`repeat(${pz.cols},1fr)`;
-  board.style.gridTemplateRows=`repeat(${pz.rows},1fr)`;
-  board.innerHTML='';
-  for(let r=0;r<pz.rows;r++){
-    for(let c=0;c<pz.cols;c++){
-      const div=document.createElement('div');div.className='pzh-piece';div.id=`pzhs-${r}-${c}`;
-      div.style.cssText=`width:${pw}px;height:${ph}px;left:${c*pw}px;top:${r*ph}px;background-image:url(${pz.img});background-size:${size}px ${size}px;background-position:-${c*pw}px -${r*ph}px`;
-      board.appendChild(div);
-    }
-  }
-}
-
 function buildPuzzleHostOverlay(solved,pz){
-  const cols=pz?pz.cols:PUZZLES[puzzleIdx].cols;
-  const rows=pz?pz.rows:PUZZLES[puzzleIdx].rows;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const key=`${r}_${c}`;
-      const el=document.getElementById(`pzhs-${r}-${c}`);
-      if(el&&solved[key])el.classList.add('solved');
-    }
-  }
-  const cnt=Object.keys(solved).length;
-  const total=cols*rows;
-  document.getElementById('pzh-info').textContent=`${cnt}/${total} piezas colocadas correctamente`;
-  if(cnt>=total){clearInterval(timerInterval);endPuzzle(puzzleIdx)}
+  const total=pz.cols*pz.rows;
+  // group pieces by player name
+  const byPlayer={};
+  Object.entries(solved).forEach(([key,playerNm])=>{
+    if(!byPlayer[playerNm])byPlayer[playerNm]=0;
+    byPlayer[playerNm]++;
+  });
+  const container=document.getElementById('pzh-groups');
+  container.innerHTML='';
+  let allDone=Object.keys(byPlayer).length>0;
+  Object.entries(byPlayer).forEach(([nm,cnt])=>{
+    const pct=Math.round(cnt/total*100);
+    const done=cnt>=total;
+    if(!done)allDone=false;
+    const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;
+    row.innerHTML=`<span class="pzg-name">${nm}</span>
+      <div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div>
+      <span class="pzg-count">${cnt}/${total}</span>`;
+    container.appendChild(row);
+  });
+  const totalSolved=Object.keys(solved).length;
+  document.getElementById('pzh-info').textContent=`${totalSolved}/${total} piezas colocadas en total`;
 }
 
 function endPuzzle(pIdx){
