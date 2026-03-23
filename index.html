@@ -158,6 +158,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 .pzg-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease}
 .pzg-count{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);color:var(--gold);letter-spacing:.08em;white-space:nowrap}
 .pzg-row.done{border-color:var(--green)}.pzg-row.done .pzg-bar{background:var(--green)}
+/* hangman keyboard */
+.hm-key{font-family:'Cinzel',serif;font-size:clamp(11px,1.8vw,14px);font-weight:600;padding:clamp(7px,1.5vw,10px) clamp(5px,1.2vw,8px);border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;transition:all .15s;min-width:clamp(28px,5vw,36px);text-align:center;border-radius:2px}
+.hm-key:active{transform:scale(.9)}
+.hm-key.used-hit{background:rgba(76,175,125,.2);border-color:var(--green);color:var(--green);opacity:.5;pointer-events:none;cursor:default}
+.hm-key.used-miss{background:rgba(232,69,69,.12);border-color:var(--red);color:var(--red);opacity:.4;pointer-events:none;cursor:default}
+.hm-key.disabled{opacity:.25;pointer-events:none}
 /* hangman team cards */
 .hm-team-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.025);padding:clamp(8px,1.5vh,14px) clamp(10px,1.8vw,16px);display:flex;flex-direction:column;gap:4px;transition:border-color .3s,background .3s}
 .hm-team-card.won{border-color:var(--green);background:rgba(76,175,125,.08)}
@@ -386,28 +392,29 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 <!-- HANGMAN PLAYER — INDIVIDUAL -->
 <div class="sc" id="sc-hmplay">
   <div class="qprnd">Ronda 4 — Ahorcado</div>
-  <!-- mini gallows player -->
-  <svg width="90" height="90" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-    <line x1="20" y1="190" x2="180" y2="190" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-    <line x1="60" y1="190" x2="60" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-    <line x1="60" y1="20" x2="130" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-    <line x1="130" y1="20" x2="130" y2="40" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
-    <circle id="hmp-head" cx="130" cy="55" r="14" fill="none" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-    <line id="hmp-body" x1="130" y1="69" x2="130" y2="120" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-    <line id="hmp-la" x1="130" y1="85" x2="108" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-    <line id="hmp-ra" x1="130" y1="85" x2="152" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-    <line id="hmp-ll" x1="130" y1="120" x2="108" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-    <line id="hmp-rl" x1="130" y1="120" x2="152" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
-  </svg>
+  <div style="display:flex;align-items:center;gap:clamp(10px,2vw,20px)">
+    <!-- mini gallows -->
+    <svg width="70" height="70" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <line x1="20" y1="190" x2="180" y2="190" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+      <line x1="60" y1="190" x2="60" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+      <line x1="60" y1="20" x2="130" y2="20" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+      <line x1="130" y1="20" x2="130" y2="40" stroke="rgba(240,234,214,.3)" stroke-width="3"/>
+      <circle id="hmp-head" cx="130" cy="55" r="14" fill="none" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="hmp-body" x1="130" y1="69" x2="130" y2="120" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="hmp-la" x1="130" y1="85" x2="108" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="hmp-ra" x1="130" y1="85" x2="152" y2="108" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="hmp-ll" x1="130" y1="120" x2="108" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="hmp-rl" x1="130" y1="120" x2="152" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    </svg>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+      <div class="hmp-lives">Vidas: <span id="hmp-lives">6</span> / 6</div>
+      <div id="hmp-result" style="display:none;font-family:'Cinzel',serif;font-size:clamp(14px,2.4vw,22px);font-weight:700"></div>
+    </div>
+  </div>
   <div class="hmp-word" id="hmp-word"></div>
   <p class="hmp-hint" id="hmp-hint"></p>
-  <div class="hmp-inp-row" id="hmp-inp-row">
-    <input class="hmp-inp" id="hmp-inp" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="A">
-    <button class="btn btn-g" id="hmp-send" style="padding:10px 16px">Enviar</button>
-  </div>
-  <div class="hmp-lives">Vidas: <span id="hmp-lives">6</span> / 6</div>
-  <div class="hmp-used" id="hmp-used">Letras: —</div>
-  <div id="hmp-result" style="display:none;font-family:'Cinzel',serif;font-size:clamp(16px,2.8vw,28px);font-weight:700;margin-top:6px"></div>
+  <!-- teclado visual -->
+  <div id="hmp-keyboard" style="display:flex;flex-direction:column;gap:4px;width:100%;max-width:360px"></div>
 </div>
 
 <!-- RESULTS -->
@@ -471,10 +478,11 @@ const VID_QS=[
 // RONDA 3 — rompecabezas — 2 puzzles en secuencia
 const PUZZLES=[
   {img:'imagen/imagen16.jpg', label:'ENIAC — Primera Computadora, 1945', cols:2, rows:2, time:10},
-  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:20},
+  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:30},
 ];
 let puzzleIdx=0;
-// RONDA 4 — ahorcado sin timer
+// RONDA 4 — ahorcado con timer de 40s por palabra
+const HM_TIME=40;
 const HM_WORDS=[
   {word:'ALGORITMO',hint:'Término que viene del nombre de Al-Juarismi',pts:400},
   {word:'HELIOCENTRISMO',hint:'Modelo donde el Sol está en el centro',pts:500},
@@ -852,17 +860,34 @@ function startHangmanWord(wIdx){
   if(wIdx>=HM_WORDS.length){endHangman();return}
   hmWordIdx=wIdx;
   const w=HM_WORDS[wIdx];
-  // publish new word to Firebase — players listen and reset their own state
   update(ref(db,`rooms/${roomCode}`),{
     status:'hangman',phase:'hm',currentQ:wIdx,hmWordIdx:wIdx,
     hmWord:w.word,hmHint:w.hint,hmActive:true
   });
-  // clear all player hangman states for new word
   remove(ref(db,`rooms/${roomCode}/hmStates`));
   buildHangmanHostDashboard(w);
   show('sc-hmhost');
   clearInterval(timerInterval);
-  // host listens to all players' individual states
+  // 40s host timer visible on projector
+  let t=HM_TIME;
+  const timerEl=document.getElementById('hm-wordlbl');
+  timerEl.textContent=`Palabra ${wIdx+1}/${HM_WORDS.length} — ${t}s`;
+  timerInterval=setInterval(()=>{
+    t--;
+    timerEl.textContent=`Palabra ${wIdx+1}/${HM_WORDS.length} — ${t}s`;
+    if(t<=0){
+      clearInterval(timerInterval);
+      // reveal word on host dashboard
+      const wDiv=document.getElementById('hmh-word');
+      wDiv.querySelectorAll('.hmltr').forEach(el=>el.style.color='var(--text)');
+      document.getElementById('hmh-status').textContent=`Tiempo — la palabra era: ${w.word}`;
+      document.getElementById('hmh-status').className='hmh-status lost';
+      setTimeout(()=>{
+        const isLast=wIdx>=HM_WORDS.length-1;
+        document.getElementById(isLast?'hm-finish':'hm-nextword').style.display='inline-flex';
+      },1000);
+    }
+  },1000);
   addL(ref(db,`rooms/${roomCode}/hmStates`),snap=>{
     updateHostDashboard(snap.val()||{},w);
   });
@@ -921,38 +946,85 @@ async function endHangman(){
   clearInterval(timerInterval);
   const snap=await get(ref(db,`rooms/${roomCode}/players`));
   const players=Object.entries(snap.val()||{}).map(([k,v])=>({...v,key:k})).sort((a,b)=>b.score-a.score);
-  await update(ref(db,`rooms/${roomCode}`),{status:'podium',winners:players.map(p=>({name:p.name,score:p.score}))});
-  buildPodium(players);launchConfetti();show('sc-pod');
+  // show score summary first
+  buildScoreList(players,'Ronda 4 — Ahorcado','Puntos totales acumulados','');
+  document.getElementById('btn-nxt').textContent='Ver podio final →';
+  document.getElementById('btn-nxt').onclick=async()=>{
+    await update(ref(db,`rooms/${roomCode}`),{status:'podium',winners:players.map(p=>({name:p.name,score:p.score}))});
+    buildPodium(players);launchConfetti();show('sc-pod');
+  };
+  show('sc-res');
 }
 
 /* ── HANGMAN PLAYER — individual state ── */
-// each player manages their OWN local hangman state
 let hmpRevealed=[],hmpMisses=0,hmpUsed=[],hmpWon=false,hmpDead=false;
+let hmpTimerInterval=null;
+
+const HM_ROWS=['QWERTYUIOP','ASDFGHJKLÑ','ZXCVBNM'];
+
+function buildKeyboard(){
+  const kb=document.getElementById('hmp-keyboard');kb.innerHTML='';
+  HM_ROWS.forEach(row=>{
+    const rowDiv=document.createElement('div');
+    rowDiv.style.cssText='display:flex;gap:3px;justify-content:center';
+    row.split('').forEach(letter=>{
+      const key=document.createElement('button');
+      key.className='hm-key';key.textContent=letter;key.id=`hk-${letter}`;
+      key.onclick=()=>sendHangmanLetter(letter);
+      rowDiv.appendChild(key);
+    });
+    kb.appendChild(rowDiv);
+  });
+}
+
+function resetKeyboard(){
+  document.querySelectorAll('.hm-key').forEach(k=>{
+    k.classList.remove('used-hit','used-miss','disabled');
+  });
+}
+
+function markKey(letter,hit){
+  const el=document.getElementById(`hk-${letter}`);
+  if(el)el.classList.add(hit?'used-hit':'used-miss');
+}
+
+function disableKeyboard(){
+  document.querySelectorAll('.hm-key').forEach(k=>k.classList.add('disabled'));
+}
 
 function showHangmanPlayer(room){
-  if(isHost)return; // host never shows player screen
-  // reset individual state for new word
+  if(isHost)return;
   hmpRevealed=Array(room.hmWord.length).fill(false);
   hmpMisses=0;hmpUsed=[];hmpWon=false;hmpDead=false;
   hmWordIdx=room.hmWordIdx||0;
-  // reset gallows
+  clearInterval(hmpTimerInterval);
   HM_PLAYER_PARTS.forEach(id=>{const el=document.getElementById(id);if(el)el.setAttribute('opacity','0')});
   document.getElementById('hmp-result').style.display='none';
-  document.getElementById('hmp-inp-row').style.display='flex';
-  document.getElementById('hmp-inp').value='';
+  buildKeyboard();
+  resetKeyboard();
   renderHangmanPlayer(room.hmWord,room.hmHint);
-  // push initial state to firebase so host sees this player
   update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:0,won:false});
   show('sc-hmplay');
-  setTimeout(()=>document.getElementById('hmp-inp').focus(),300);
+  // 40s player timer
+  let t=HM_TIME;
+  hmpTimerInterval=setInterval(()=>{
+    t--;
+    if(t<=0||hmpWon||hmpDead){clearInterval(hmpTimerInterval);if(!hmpWon&&!hmpDead)timeoutHangmanPlayer(room.hmWord);}
+  },1000);
+}
+
+function timeoutHangmanPlayer(word){
+  hmpDead=true;disableKeyboard();
+  const res=document.getElementById('hmp-result');res.style.display='block';
+  res.textContent=`Tiempo — era: ${word}`;res.style.color='var(--red)';
+  word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
+  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:HM_PLAYER_PARTS.length,won:false});
 }
 
 function updateHangmanPlayer(room){
-  // called on hm-update — but now players manage themselves, nothing to sync from host
-  // just keep word visible in case it refreshed
   if(!isHost&&room.hmWord){
     const wDiv=document.getElementById('hmp-word');
-    if(wDiv.children.length===0) renderHangmanPlayer(room.hmWord,room.hmHint);
+    if(wDiv.children.length===0)renderHangmanPlayer(room.hmWord,room.hmHint);
   }
 }
 
@@ -965,55 +1037,53 @@ function renderHangmanPlayer(word,hint){
   });
   document.getElementById('hmp-hint').textContent=`Pista: ${hint}`;
   document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
-  document.getElementById('hmp-used').textContent=hmpUsed.length?`Letras: ${hmpUsed.join(' · ')}`:'Ninguna aún';
 }
 
-document.getElementById('hmp-send').onclick=sendHangmanLetter;
-document.getElementById('hmp-inp').onkeydown=e=>{if(e.key==='Enter')sendHangmanLetter()};
+// enter key support
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('sc-hmplay').classList.contains('active')&&!hmpWon&&!hmpDead){
+    const l=e.key.toUpperCase();
+    if(/^[A-ZÁÉÍÓÚÑ]$/.test(l)&&l.length===1)sendHangmanLetter(l);
+  }
+});
 
-async function sendHangmanLetter(){
+async function sendHangmanLetter(letter){
   if(hmpWon||hmpDead)return;
-  const inp=document.getElementById('hmp-inp');
-  const letter=inp.value.trim().toUpperCase();
-  if(!letter||!/[A-ZÁÉÍÓÚÑ]/.test(letter)||hmpUsed.includes(letter)){inp.value='';return}
-  inp.value='';
+  letter=letter.toUpperCase();
+  if(hmpUsed.includes(letter))return;
   hmpUsed.push(letter);
-  // get current word from Firebase
   const snap=await get(ref(db,`rooms/${roomCode}/hmWord`));
   const word=snap.val()||'';
   let hit=false;
   word.split('').forEach((l,i)=>{if(l===letter){hmpRevealed[i]=true;hit=true}});
-  if(!hit) hmpMisses++;
+  if(!hit)hmpMisses++;
+  markKey(letter,hit);
   // update gallows
   for(let i=0;i<hmpMisses&&i<HM_PLAYER_PARTS.length;i++){
     const el=document.getElementById(HM_PLAYER_PARTS[i]);if(el)el.setAttribute('opacity','1');
   }
-  // update word display
+  // update word
   word.split('').forEach((l,i)=>{
     const el=document.getElementById(`hmpL-${i}`);
     if(el&&hmpRevealed[i])el.classList.remove('hidden');
   });
   document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
-  document.getElementById('hmp-used').textContent=`Letras: ${hmpUsed.join(' · ')}`;
-  // check win/lose
   hmpWon=word.split('').every((_,i)=>hmpRevealed[i]);
   hmpDead=hmpMisses>=HM_PLAYER_PARTS.length;
-  // push state to host dashboard
   await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:hmpMisses,won:hmpWon});
   if(hmpWon||hmpDead){
-    document.getElementById('hmp-inp-row').style.display='none';
+    clearInterval(hmpTimerInterval);
+    disableKeyboard();
     const res=document.getElementById('hmp-result');res.style.display='block';
     if(hmpWon){
-      res.textContent='¡Adivinaste!';res.style.color='var(--green)';
-      // pts = vidas restantes * 100
       const lives=HM_PLAYER_PARTS.length-hmpMisses;
       const pts=lives*100;
+      res.textContent=`¡Adivinaste! +${pts} pts`;res.style.color='var(--green)';
       const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
       const p=pSnap.val()||{};
       await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+pts,[`pts/hm_${hmWordIdx}`]:pts});
     } else {
       res.textContent=`La palabra era: ${word}`;res.style.color='var(--red)';
-      // reveal all
       word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
     }
   }
