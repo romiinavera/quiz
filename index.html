@@ -656,67 +656,86 @@ function startPuzzleHost(pIdx){
   clearInterval(timerInterval);
   timeLeft=pz.time;
   update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:pIdx,puzzleImg:pz.img,puzzleLabel:pz.label,puzzleCols:pz.cols,puzzleRows:pz.rows,puzzleSolved:{},timeLeft:pz.time});
-  buildPuzzleHost();
+  buildPuzzleHost(pz);
   show('sc-pzhost');
-  document.getElementById('pzh-label').textContent=PUZZLE.label;
+  document.getElementById('pzh-label').textContent=pz.label;
   document.getElementById('pz-next').style.display='none';
   const pf=document.getElementById('pz-pf');
   pf.style.transition='none';pf.style.width='100%';
-  setTimeout(()=>{pf.style.transition='width 20s linear';pf.style.width='0%'},80);
+  setTimeout(()=>{pf.style.transition=`width ${pz.time}s linear`;pf.style.width='0%'},80);
+  document.getElementById('pz-timer').textContent=pz.time;
   timerInterval=setInterval(()=>{
     timeLeft--;
     document.getElementById('pz-timer').textContent=timeLeft;
     document.getElementById('pz-timer').classList.toggle('hot',timeLeft<=5);
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
-    if(timeLeft<=0){clearInterval(timerInterval);endPuzzle()}
+    if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
   addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
-    const solved=snap.val()||{};
-    buildPuzzleHostOverlay(solved);
+    if(document.getElementById('sc-pzhost').classList.contains('active')){
+      const solved=snap.val()||{};
+      buildPuzzleHostOverlay(solved,pz);
+    }
   });
 }
 
-function buildPuzzleHost(){
+function buildPuzzleHost(pz){
   const board=document.getElementById('pzh-board');
-  const size=Math.min(innerWidth*.55,innerHeight*.55,480);
-  const pw=size/PUZZLE.cols,ph=size/PUZZLE.rows;
+  const size=Math.min(innerWidth*.52,innerHeight*.52,460);
+  const pw=size/pz.cols,ph=size/pz.rows;
   board.style.width=size+'px';board.style.height=size+'px';
-  board.style.gridTemplateColumns=`repeat(${PUZZLE.cols},1fr)`;
-  board.style.gridTemplateRows=`repeat(${PUZZLE.rows},1fr)`;
+  board.style.gridTemplateColumns=`repeat(${pz.cols},1fr)`;
+  board.style.gridTemplateRows=`repeat(${pz.rows},1fr)`;
   board.innerHTML='';
-  for(let r=0;r<PUZZLE.rows;r++){
-    for(let c=0;c<PUZZLE.cols;c++){
+  for(let r=0;r<pz.rows;r++){
+    for(let c=0;c<pz.cols;c++){
       const div=document.createElement('div');div.className='pzh-piece';div.id=`pzhs-${r}-${c}`;
-      div.style.cssText=`width:${pw}px;height:${ph}px;left:${c*pw}px;top:${r*ph}px;background-image:url(${PUZZLE.img});background-size:${size}px ${size}px;background-position:-${c*pw}px -${r*ph}px`;
+      div.style.cssText=`width:${pw}px;height:${ph}px;left:${c*pw}px;top:${r*ph}px;background-image:url(${pz.img});background-size:${size}px ${size}px;background-position:-${c*pw}px -${r*ph}px`;
       board.appendChild(div);
     }
   }
 }
 
-function buildPuzzleHostOverlay(solved){
-  // show which pieces are solved by any team
-  for(let r=0;r<PUZZLE.rows;r++){
-    for(let c=0;c<PUZZLE.cols;c++){
+function buildPuzzleHostOverlay(solved,pz){
+  const cols=pz?pz.cols:PUZZLES[puzzleIdx].cols;
+  const rows=pz?pz.rows:PUZZLES[puzzleIdx].rows;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
       const key=`${r}_${c}`;
       const el=document.getElementById(`pzhs-${r}-${c}`);
       if(el&&solved[key])el.classList.add('solved');
     }
   }
   const cnt=Object.keys(solved).length;
-  const total=PUZZLE.cols*PUZZLE.rows;
+  const total=cols*rows;
   document.getElementById('pzh-info').textContent=`${cnt}/${total} piezas colocadas correctamente`;
-  if(cnt>=total){clearInterval(timerInterval);endPuzzle()}
+  if(cnt>=total){clearInterval(timerInterval);endPuzzle(puzzleIdx)}
 }
 
-function endPuzzle(){
+function endPuzzle(pIdx){
   clearInterval(timerInterval);
-  document.getElementById('pz-next').style.display='inline-flex';
-  document.getElementById('pzh-info').textContent='¡Rompecabezas completado!';
+  clearL(); // stop listening to old puzzleSolved
+  listenGame(); // re-attach main game listener
+  document.getElementById('pzh-info').textContent='¡Tiempo!';
+  const isLast=pIdx>=PUZZLES.length-1;
+  const btn=document.getElementById('pz-next');
+  btn.textContent=isLast?'Ver resultados →':'Siguiente rompecabezas →';
+  btn.style.display='inline-flex';
 }
 
 document.getElementById('pz-next').onclick=()=>{
-  update(ref(db,`rooms/${roomCode}`),{status:'results',phase:'pz',currentQ:0});
-  showPuzzleResults();
+  const isLast=puzzleIdx>=PUZZLES.length-1;
+  if(isLast){
+    update(ref(db,`rooms/${roomCode}`),{status:'results',phase:'pz',currentQ:puzzleIdx});
+    showPuzzleResults();
+  } else {
+    const nextIdx=puzzleIdx+1;
+    const pz=PUZZLES[nextIdx];
+    // clear old solved data before starting new puzzle
+    remove(ref(db,`rooms/${roomCode}/puzzleSolved`));
+    update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'pz',currentQ:nextIdx});
+    showRoundIntro(3,`Rompecabezas ${nextIdx+1}/${PUZZLES.length}`,`${pz.cols}×${pz.rows} piezas — ${pz.time} segundos`,()=>startPuzzleHost(nextIdx));
+  }
 };
 
 async function showPuzzleResults(){
@@ -729,30 +748,33 @@ async function showPuzzleResults(){
 }
 
 function showPuzzlePlayer(){
-  // read puzzle image from Firebase to ensure it matches host
-  get(ref(db,`rooms/${roomCode}/puzzleImg`)).then(snap=>{
-    const img=snap.val()||PUZZLE.img;
-    _buildPuzzlePlayer(img);
+  // read all puzzle config from Firebase to always match host
+  get(ref(db,`rooms/${roomCode}`)).then(snap=>{
+    const room=snap.val()||{};
+    const img=room.puzzleImg||PUZZLES[0].img;
+    const cols=room.puzzleCols||2;
+    const rows=room.puzzleRows||2;
+    _buildPuzzlePlayer(img,cols,rows);
   });
 }
 
-function _buildPuzzlePlayer(img){
-  const size=Math.min(innerWidth*.85,280);
-  const pw=size/PUZZLE.cols,ph=size/PUZZLE.rows;
-  const total=PUZZLE.cols*PUZZLE.rows;
-  pzPieces=[];for(let r=0;r<PUZZLE.rows;r++)for(let c=0;c<PUZZLE.cols;c++)pzPieces.push({r,c});
+function _buildPuzzlePlayer(img,cols,rows){
+  const size=Math.min(innerWidth*.85,Math.min(innerWidth,innerHeight)*.7,300);
+  const pw=size/cols,ph=size/rows;
+  const total=cols*rows;
+  pzPieces=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)pzPieces.push({r,c});
   pzPieces.sort(()=>Math.random()-.5);
   pzSolved=0;
   const board=document.getElementById('pzp-board');board.innerHTML='';
-  board.style.cssText=`grid-template-columns:repeat(${PUZZLE.cols},${pw}px);grid-template-rows:repeat(${PUZZLE.rows},${ph}px);gap:3px`;
-  for(let r=0;r<PUZZLE.rows;r++){
-    for(let c=0;c<PUZZLE.cols;c++){
+  board.style.cssText=`grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:3px`;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
       const slot=document.createElement('div');slot.className='pzp-slot';
       slot.style.cssText=`width:${pw}px;height:${ph}px`;
       slot.dataset.r=r;slot.dataset.c=c;
       slot.addEventListener('dragover',e=>{e.preventDefault()});
-      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img)});
-      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img)},{passive:false});
+      slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows)});
+      slot.addEventListener('touchend',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows)},{passive:false});
       board.appendChild(slot);
     }
   }
@@ -771,7 +793,7 @@ function _buildPuzzlePlayer(img){
 }
 
 let _dragPiece=null;
-function dropOnSlot(slot,img){
+function dropOnSlot(slot,img,cols,rows){
   const piece=window._dragPiece;if(!piece)return;
   const sr=parseInt(slot.dataset.r),sc=parseInt(slot.dataset.c);
   const pr=parseInt(piece.dataset.r),pc=parseInt(piece.dataset.c);
@@ -782,9 +804,9 @@ function dropOnSlot(slot,img){
   if(sr===pr&&sc===pc){
     slot.classList.add('correct');
     pzSolved++;
-    // notify firebase
     update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc}`]:playerName||'?'});
-    document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolved}/${PUZZLE.cols*PUZZLE.rows}`;
+    const total=cols&&rows?cols*rows:4;
+    document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolved}/${total}`;
     // add pts
     const pts=50;
     get(ref(db,`rooms/${roomCode}/players/${playerKey}`)).then(snap=>{
