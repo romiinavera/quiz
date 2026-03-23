@@ -258,10 +258,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   <div class="div"></div>
   <p class="lsub">Imágenes · Videos · Rompecabezas · Ahorcado</p>
   <div class="btns">
-    <button class="btn btn-g" id="btn-join">Unirme al juego</button>
+    <button class="btn btn-g" id="btn-join" style="font-size:clamp(12px,1.8vw,16px);padding:clamp(14px,2.5vh,20px) clamp(32px,5vw,56px)">Unirme al juego</button>
   </div>
-  <!-- botón secreto — click limpia Firebase, doble click abre modo presentador -->
-  <button id="btn-secret" title="" style="position:absolute;bottom:12px;left:14px;background:none;border:none;color:rgba(255,255,255,.08);font-size:18px;cursor:pointer;font-family:'JetBrains Mono',monospace;padding:8px 10px;user-select:none">·</button>
+  <!-- botón presentador — discreto, esquina inferior izquierda -->
+  <button id="btn-host" title="Presentador" style="position:fixed;bottom:16px;left:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:all .3s;z-index:50;backdrop-filter:blur(4px)">Presentador</button>
 </div>
 
 <!-- JOIN -->
@@ -365,13 +365,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 <!-- PUZZLE PLAYER -->
 <div class="sc" id="sc-pzplay">
   <div class="qprnd">Ronda 3 — Rompecabezas</div>
-  <p style="font-size:clamp(11px,1.5vw,13px);color:var(--dim);font-style:italic">Arrastrá las piezas al lugar correcto</p>
-  <div style="display:flex;gap:clamp(10px,2vw,20px);align-items:flex-start;flex-wrap:wrap;justify-content:center;width:100%">
-    <!-- slots board -->
-    <div id="pzp-board" class="pzp-board"></div>
-    <!-- tray of pieces -->
-    <div id="pzp-tray" class="pzp-tray"></div>
-  </div>
+  <p style="font-size:clamp(10px,1.4vw,12px);color:var(--dim);font-style:italic">Arrastrá las piezas al lugar correcto</p>
+  <!-- board arriba -->
+  <div id="pzp-board" class="pzp-board"></div>
+  <!-- tray abajo -->
+  <div id="pzp-tray" class="pzp-tray"></div>
   <div class="pzp-wait" id="pzp-status">Piezas sin colocar: 9</div>
 </div>
 
@@ -517,32 +515,12 @@ function clearL(){fbL.forEach(([r,fn])=>off(r,fn));fbL=[]}
 function setNebula(col){document.getElementById('nbg').style.background=`radial-gradient(ellipse 60% 40% at 50%50%,${col} 0%,transparent 65%)`}
 
 /* ══ LANDING ══ */
-async function clearAllRooms(){
-  await remove(ref(db,'rooms'));
-  const btn=document.getElementById('btn-secret');
-  btn.style.color='rgba(76,175,125,.35)';
-  setTimeout(()=>btn.style.color='rgba(255,255,255,.06)',1200);
-}
-window.clearAllRooms=clearAllRooms;
-
-// secret button: single = clear, double = host mode
-let secretClicks=0,secretTimer=null;
-document.getElementById('btn-secret').addEventListener('click',()=>{
-  secretClicks++;
-  if(secretClicks===1){
-    secretTimer=setTimeout(async()=>{
-      secretClicks=0;
-      await clearAllRooms();
-    },350);
-  } else if(secretClicks>=2){
-    clearTimeout(secretTimer);secretClicks=0;
-    // open host mode
-    isHost=true;roomCode=genCode();
-    set(ref(db,`rooms/${roomCode}`),{status:'lobby',phase:'',currentQ:-1,players:{}});
-    document.getElementById('lh-code').textContent=roomCode;
-    document.getElementById('lh-url').textContent=location.origin+location.pathname;
-    show('sc-lh');listenPlayers();
-  }
+document.getElementById('btn-host').addEventListener('click',()=>{
+  isHost=true;roomCode=genCode();
+  set(ref(db,`rooms/${roomCode}`),{status:'lobby',phase:'',currentQ:-1,players:{}});
+  document.getElementById('lh-code').textContent=roomCode;
+  document.getElementById('lh-url').textContent=location.origin+location.pathname;
+  show('sc-lh');listenPlayers();
 });
 document.getElementById('btn-join').onclick=()=>{isHost=false;show('sc-join');setTimeout(()=>document.getElementById('inp-code').focus(),300)};
 document.getElementById('btn-backjoin').onclick=()=>show('sc-land');
@@ -794,26 +772,25 @@ function showPuzzlePlayer(){
 }
 
 function _buildPuzzlePlayer(img,cols,rows){
-  // preload image to get real dimensions for perfect cuts
   const image=new Image();
   image.onload=()=>{
     const ratio=image.naturalWidth/image.naturalHeight;
-    // piece size — square grid that fits screen
-    const maxW=Math.min(innerWidth*.88,340);
-    const maxH=Math.min(innerHeight*.40,260);
-    // fit to screen keeping ratio
+    // tamaño máximo según pantalla — más pequeño para 3x3
+    const maxW=Math.min(innerWidth*.92, cols>2 ? 270 : 320);
+    const maxH=Math.min(innerHeight*.38, cols>2 ? 220 : 260);
     let bw=maxW,bh=bw/ratio;
     if(bh>maxH){bh=maxH;bw=bh*ratio}
     bw=Math.floor(bw);bh=Math.floor(bh);
     const pw=Math.floor(bw/cols);
     const ph=Math.floor(bh/rows);
-    // use exact multiples so no gaps
     const exactW=pw*cols;const exactH=ph*rows;
     const total=cols*rows;
     pzPieces=[];
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) pzPieces.push({r,c});
     pzPieces.sort(()=>Math.random()-.5);
     pzSolved=0;
+
+    // board de slots
     const board=document.getElementById('pzp-board');board.innerHTML='';
     board.style.cssText=`display:grid;grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:2px`;
     for(let r=0;r<rows;r++){
@@ -822,7 +799,7 @@ function _buildPuzzlePlayer(img,cols,rows){
         slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative`;
         slot.dataset.r=r;slot.dataset.c=c;
         const lbl=document.createElement('span');
-        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:9px;color:rgba(255,255,255,.2);pointer-events:none';
+        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:8px;color:rgba(255,255,255,.2);pointer-events:none';
         lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
         slot.addEventListener('dragover',e=>e.preventDefault());
         slot.addEventListener('drop',e=>{e.preventDefault();dropOnSlot(slot,img,cols,rows,pw,ph,exactW,exactH)});
@@ -830,11 +807,12 @@ function _buildPuzzlePlayer(img,cols,rows){
         board.appendChild(slot);
       }
     }
+
+    // tray de piezas
     const tray=document.getElementById('pzp-tray');tray.innerHTML='';
-    tray.style.cssText=`display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:${exactW+20}px`;
+    tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${exactW+20}px`;
     pzPieces.forEach(p=>{
       const piece=document.createElement('div');piece.className='pzp-piece';
-      // background-size = full image scaled to exactW×exactH, position cuts out this piece
       piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:grab;border:1px solid rgba(255,255,255,.22)`;
       piece.dataset.r=p.r;piece.dataset.c=p.c;piece.draggable=true;
       piece.addEventListener('dragstart',()=>{window._dragPiece=piece;piece.style.opacity='.4'});
@@ -845,10 +823,7 @@ function _buildPuzzlePlayer(img,cols,rows){
     document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
     show('sc-pzplay');
   };
-  image.onerror=()=>{
-    // fallback sin imagen
-    _buildPuzzlePlayer(PUZZLES[0].img,cols,rows);
-  };
+  image.onerror=()=>{ _buildPuzzlePlayer(PUZZLES[0].img,cols,rows) };
   image.src=img;
 }
 
