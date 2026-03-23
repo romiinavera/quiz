@@ -840,11 +840,11 @@ async function showPuzzleResults(){
     row.innerHTML=`<span class="srk">${i+1}</span>`;
     row.appendChild(canvas);
     const info=document.createElement('span');info.className='snm';info.textContent=nm;row.appendChild(info);
-    const pzCnt=document.createElement('span');pzCnt.style.cssText='font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.2vw,11px);color:var(--dim)';pzCnt.textContent=`${data.cnt}/${total}`;row.appendChild(pzCnt);
+    const pzCnt=document.createElement('span');pzCnt.style.cssText="font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.2vw,11px);color:var(--dim)";pzCnt.textContent=`${data.cnt}/${total}`;row.appendChild(pzCnt);
     const ptEl=document.createElement('span');ptEl.className='spt';ptEl.textContent=`+${pts}`;row.appendChild(ptEl);
     sc.appendChild(row);
   });
-  if(sorted.length===0)sc.innerHTML='<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)">Ningún grupo colocó piezas</div>';
+  if(sorted.length===0)sc.innerHTML="<div style=\"font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)\">Ningún grupo colocó piezas</div>";
   document.getElementById('btn-nxt').textContent='Ronda 4 — Ahorcado →';
   document.getElementById('btn-nxt').onclick=()=>startRound4();
   show('sc-res');
