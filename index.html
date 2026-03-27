@@ -804,12 +804,15 @@ document.getElementById('pz-next').onclick=()=>{
 };
 
 function lockPuzzlePlayer(){
-  pzSelected=null;
-  const ghost=document.getElementById('pz-ghost');if(ghost)ghost.style.display='none';
-  document.querySelectorAll('.pzp-piece').forEach(p=>{p.style.pointerEvents='none';p.classList.remove('selected')});
+  _deselectPz();
+  if(_pzMoveHandler)  {document.removeEventListener('pointermove',_pzMoveHandler);_pzMoveHandler=null}
+  if(_pzCancelHandler){document.removeEventListener('pointerdown',_pzCancelHandler);_pzCancelHandler=null}
+  document.querySelectorAll('.pzp-piece').forEach(p=>p.style.pointerEvents='none');
   document.querySelectorAll('.pzp-slot').forEach(s=>s.style.pointerEvents='none');
   const status=document.getElementById('pzp-status');
-  if(status)status.textContent=`¡Tiempo! Piezas correctas: ${pzSolvedCount}`;
+  if(status)status.textContent=`¡Tiempo! — ${pzSolvedCount} pieza${pzSolvedCount!==1?'s':''} correcta${pzSolvedCount!==1?'s':''}`;
+  const scoreLive=document.getElementById('pzp-score-live');
+  if(scoreLive)scoreLive.textContent=`★ ${pzLocalScore} pts`;
 }
 
 async function showPuzzleResults(){
@@ -842,8 +845,27 @@ async function showPuzzleResults(){
 }
 
 /* ── PUZZLE PLAYER: reconstruye el tablero ── */
+// Guardar listeners activos del puzzle para limpiarlos al reconstruir
+let _pzMoveHandler=null;
+let _pzBoardHandler=null;
+let _pzTrayHandler=null;
+let _pzCancelHandler=null;
+// Set de claves de piezas YA confirmadas en Firebase (evita doble conteo)
+let _pzConfirmedKeys=new Set();
+
 function showPuzzlePlayer(){
-  pzSolvedCount=0;pzLocalScore=0;pzSelected=null;
+  // Reset COMPLETO de todo el estado del puzzle
+  pzSolvedCount=0;
+  pzLocalScore=0;
+  pzSelected=null;
+  _pzConfirmedKeys=new Set();
+  // Limpiar ghost
+  const ghost=document.getElementById('pz-ghost');
+  if(ghost)ghost.style.display='none';
+  // Resetear score live
+  const scoreLive=document.getElementById('pzp-score-live');
+  if(scoreLive){scoreLive.textContent='★ 0 pts';scoreLive.style.borderColor='rgba(212,160,23,.3)';scoreLive.style.color='var(--gold)'}
+
   get(ref(db,`rooms/${roomCode}`)).then(snap=>{
     const room=snap.val()||{};
     const img=room.puzzleImg||PUZZLES[0].img;
@@ -858,117 +880,147 @@ function _buildPuzzlePlayer(img,cols,rows,ptsPerPiece){
   const image=new Image();
   image.onload=()=>{
     const ratio=image.naturalWidth/image.naturalHeight;
-    const maxW=Math.min(innerWidth*.92,cols>2?260:310);
-    const maxH=Math.min(innerHeight*.4,cols>2?200:250);
+    const maxW=Math.min(innerWidth*.92,cols>2?255:305);
+    const maxH=Math.min(innerHeight*.38,cols>2?195:245);
     let bw=maxW,bh=bw/ratio;
     if(bh>maxH){bh=maxH;bw=bh*ratio}
     bw=Math.floor(bw);bh=Math.floor(bh);
     const pw=Math.floor(bw/cols);
     const ph=Math.floor(bh/rows);
-    const exactW=pw*cols;const exactH=ph*rows;
-    const total=cols*rows;
+    const exactW=pw*cols;
+    const exactH=ph*rows;
+    const total=cols*rows; // ← el total REAL de piezas
 
-    // Actualizar marcador en vivo
-    const scoreLive=document.getElementById('pzp-score-live');
-    if(scoreLive)scoreLive.textContent=`★ ${pzLocalScore} pts`;
-
-    // Crear lista de piezas y mezclar bien
+    // Crear piezas en orden (r,c) y mezclar
     let pieces=[];
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)pieces.push({r,c});
-    do{pieces.sort(()=>Math.random()-.5)}
-    while(pieces.length>1&&pieces.some((p,i)=>p.r===Math.floor(i/cols)&&p.c===i%cols));
+    // Fisher-Yates shuffle garantizado
+    for(let i=pieces.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [pieces[i],pieces[j]]=[pieces[j],pieces[i]];
+    }
+    // Asegurar que ninguna pieza quede en su posición original (al menos una)
+    if(pieces.every((p,i)=>p.r===Math.floor(i/cols)&&p.c===i%cols)){
+      // swap primeras dos piezas
+      [pieces[0],pieces[1]]=[pieces[1],pieces[0]];
+    }
 
-    // Slot board
-    const board=document.getElementById('pzp-board');board.innerHTML='';
+    // Limpiar y construir board de slots
+    const board=document.getElementById('pzp-board');
+    board.innerHTML='';
     board.style.cssText=`display:grid;grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:2px`;
     for(let r=0;r<rows;r++){
       for(let c=0;c<cols;c++){
-        const slot=document.createElement('div');slot.className='pzp-slot';
-        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative;cursor:pointer`;
-        slot.dataset.r=r;slot.dataset.c=c;
-        // número del slot
+        const slot=document.createElement('div');
+        slot.className='pzp-slot';
+        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative;cursor:pointer;overflow:hidden`;
+        slot.dataset.r=String(r);
+        slot.dataset.c=String(c);
+        // número guía del slot (fila*cols + col + 1 = posición destino)
         const lbl=document.createElement('span');
-        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:clamp(7px,1.5vw,10px);color:rgba(255,255,255,.2);pointer-events:none;z-index:1';
-        lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
+        lbl.className='slot-lbl';
+        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:clamp(7px,1.5vw,10px);color:rgba(255,255,255,.18);pointer-events:none;z-index:1;user-select:none';
+        lbl.textContent=r*cols+c+1;
+        slot.appendChild(lbl);
         board.appendChild(slot);
       }
     }
 
-    // Tray de piezas
-    const tray=document.getElementById('pzp-tray');tray.innerHTML='';
-    tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${exactW+20}px`;
+    // Limpiar y construir tray de piezas
+    const tray=document.getElementById('pzp-tray');
+    tray.innerHTML='';
+    tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${exactW+24}px`;
     pieces.forEach(p=>{
-      const piece=document.createElement('div');piece.className='pzp-piece';
+      const piece=document.createElement('div');
+      piece.className='pzp-piece';
       piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:pointer;touch-action:none`;
-      piece.dataset.r=p.r;piece.dataset.c=p.c;
+      piece.dataset.r=String(p.r);
+      piece.dataset.c=String(p.c);
       tray.appendChild(piece);
     });
 
+    // Inicializar contadores con el total correcto
     document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
-    document.getElementById('pzp-rnd').textContent=`Rompecabezas — armá la imagen`;
+    document.getElementById('pzp-rnd').textContent='Rompecabezas — armá la imagen';
+    document.getElementById('pzp-score-live').textContent='★ 0 pts';
+
     show('sc-pzplay');
-    setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total,ptsPerPiece);
+    _setupPuzzleInteraction(board,tray,cols,rows,pw,ph,exactW,exactH,total,ptsPerPiece,img);
   };
   image.onerror=()=>{_buildPuzzlePlayer(PUZZLES[0].img,cols,rows,ptsPerPiece)};
   image.src=img;
 }
 
-/* ── Interacción puzzle: tap para seleccionar, tap para colocar ── */
+/* ── Interacción puzzle (listeners limpios, sin acumulación) ── */
 const pzGhost=document.getElementById('pz-ghost');
 
-function setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total,ptsPerPiece){
-  pzSelected=null;pzGhost.style.display='none';
-  pzGhost.style.width=pw+'px';pzGhost.style.height=ph+'px';
+function _setupPuzzleInteraction(board,tray,cols,rows,pw,ph,exactW,exactH,total,ptsPerPiece,img){
+  pzSelected=null;
+  pzGhost.style.display='none';
+  pzGhost.style.width=pw+'px';
+  pzGhost.style.height=ph+'px';
 
-  function onMove(e){
+  // Eliminar listeners anteriores para evitar acumulación
+  if(_pzMoveHandler)  document.removeEventListener('pointermove',_pzMoveHandler);
+  if(_pzCancelHandler)document.removeEventListener('pointerdown',_pzCancelHandler);
+  // Los listeners del board/tray se eliminan automáticamente al hacer innerHTML=''
+  // pero guardamos refs por si acaso
+  _pzMoveHandler=null;_pzBoardHandler=null;_pzTrayHandler=null;_pzCancelHandler=null;
+
+  // Ghost sigue al puntero
+  _pzMoveHandler=e=>{
     if(!pzSelected)return;
-    const x=e.clientX||e.touches?.[0]?.clientX;
-    const y=e.clientY||e.touches?.[0]?.clientY;
-    if(x&&y){pzGhost.style.left=x+'px';pzGhost.style.top=y+'px'}
-  }
-  document.addEventListener('pointermove',onMove);
+    const x=e.clientX;const y=e.clientY;
+    pzGhost.style.left=x+'px';pzGhost.style.top=y+'px';
+  };
+  document.addEventListener('pointermove',_pzMoveHandler);
 
-  // TAP en tray — seleccionar pieza
-  const tray=document.getElementById('pzp-tray');
-  tray.addEventListener('pointerdown',e=>{
+  // TAP en tray → seleccionar pieza
+  _pzTrayHandler=e=>{
     e.preventDefault();
     const piece=e.target.closest('.pzp-piece');
     if(!piece)return;
-    selectPzPiece(piece,img,exactW,exactH);
-  },{passive:false});
+    _selectPzPiece(piece);
+  };
+  tray.addEventListener('pointerdown',_pzTrayHandler,{passive:false});
 
-  // TAP en board — colocar pieza
-  const board=document.getElementById('pzp-board');
-  board.addEventListener('pointerdown',e=>{
+  // TAP en board → colocar pieza o recoger pieza incorrecta del board
+  _pzBoardHandler=e=>{
     e.preventDefault();
-    // Si tocó una pieza ya en el board (no correcta) → devolverla al tray
+    // ¿tocó una pieza que ya está en un slot?
     const touchedPiece=e.target.closest('.pzp-piece');
     if(touchedPiece){
       const parentSlot=touchedPiece.parentElement;
+      // Si está en un slot correcto: no hacer nada
       if(parentSlot&&parentSlot.classList.contains('correct'))return;
+      // Si está en un slot incorrecto: devolver al tray y seleccionarla
       if(parentSlot&&parentSlot.classList.contains('pzp-slot')){
-        parentSlot.classList.remove('has-piece');
-        parentSlot.querySelectorAll('.pzp-piece').forEach(p=>p.remove());
+        _cleanSlot(parentSlot);
         tray.appendChild(touchedPiece);
-        touchedPiece.style.outline='';touchedPiece.classList.remove('selected');
-        selectPzPiece(touchedPiece,img,exactW,exactH);
+        touchedPiece.classList.remove('selected');
+        _selectPzPiece(touchedPiece);
         return;
       }
     }
+    // ¿hay pieza seleccionada para colocar?
     if(!pzSelected)return;
+    // Buscar el slot destino (puede ser el slot o un hijo del slot)
     const slot=e.target.closest('.pzp-slot');
     if(!slot)return;
-    placePzPiece(slot,cols,rows,pw,ph,total,ptsPerPiece,tray);
-  },{passive:false});
+    _placePzPiece(slot,tray,total,ptsPerPiece);
+  };
+  board.addEventListener('pointerdown',_pzBoardHandler,{passive:false});
 
-  // cancelar selección con tap fuera
-  document.addEventListener('pointerdown',e=>{
-    if(pzSelected&&!e.target.closest('#pzp-board,#pzp-tray')){deselectPz()}
-  });
+  // Cancelar selección con tap fuera del board/tray
+  _pzCancelHandler=e=>{
+    if(!pzSelected)return;
+    if(!e.target.closest('#pzp-board,#pzp-tray')){_deselectPz()}
+  };
+  document.addEventListener('pointerdown',_pzCancelHandler);
 }
 
-function selectPzPiece(piece,img,exactW,exactH){
-  if(pzSelected){pzSelected.classList.remove('selected')}
+function _selectPzPiece(piece){
+  if(pzSelected)pzSelected.classList.remove('selected');
   pzSelected=piece;
   piece.classList.add('selected');
   pzGhost.style.backgroundImage=piece.style.backgroundImage;
@@ -977,60 +1029,93 @@ function selectPzPiece(piece,img,exactW,exactH){
   pzGhost.style.display='block';
 }
 
-function deselectPz(){
+function _deselectPz(){
   if(pzSelected)pzSelected.classList.remove('selected');
-  pzSelected=null;pzGhost.style.display='none';
+  pzSelected=null;
+  pzGhost.style.display='none';
 }
 
-async function placePzPiece(slot,cols,rows,pw,ph,total,ptsPerPiece,tray){
+// Limpia un slot: quita clases y piezas pero conserva el número guía
+function _cleanSlot(slot){
+  slot.classList.remove('has-piece');
+  // Quitar piezas pero NO el label de número
+  Array.from(slot.children).forEach(child=>{
+    if(!child.classList.contains('slot-lbl'))slot.removeChild(child);
+  });
+}
+
+async function _placePzPiece(slot,tray,total,ptsPerPiece){
   if(!pzSelected)return;
   if(slot.classList.contains('correct'))return;
-  const sr=parseInt(slot.dataset.r),sc=parseInt(slot.dataset.c);
-  const pr=parseInt(pzSelected.dataset.r),pc=parseInt(pzSelected.dataset.c);
-  // devolver pieza existente al tray si hay una
-  const existing=slot.querySelector('.pzp-piece');
-  if(existing){
-    existing.classList.remove('selected');
-    tray.appendChild(existing);
+
+  const sr=parseInt(slot.dataset.r,10);
+  const sc_=parseInt(slot.dataset.c,10);
+  const pr=parseInt(pzSelected.dataset.r,10);
+  const pc=parseInt(pzSelected.dataset.c,10);
+
+  // Si el slot ya tiene una pieza (incorrecta), devolverla al tray primero
+  const existingPiece=slot.querySelector('.pzp-piece');
+  if(existingPiece){
+    existingPiece.classList.remove('selected');
+    tray.appendChild(existingPiece);
   }
-  // eliminar etiqueta de número si la hay
-  slot.querySelectorAll('span').forEach(s=>s.remove());
+
+  // Colocar la pieza seleccionada en el slot
   pzSelected.classList.remove('selected');
   slot.appendChild(pzSelected);
   slot.classList.add('has-piece');
 
-  const correct=(sr===pr&&sc===pc);
-  if(correct){
+  const correct=(sr===pr&&sc_===pc);
+  const pieceKey=`${sr}_${sc_}`;
+
+  if(correct && !_pzConfirmedKeys.has(pieceKey)){
+    // Marcar como correcto ANTES de cualquier await para evitar doble conteo
+    _pzConfirmedKeys.add(pieceKey);
     slot.classList.add('correct');
     pzSolvedCount++;
     pzLocalScore+=ptsPerPiece;
-    // Actualizar score en vivo
+
+    // UI inmediata
+    const statusEl=document.getElementById('pzp-status');
+    if(statusEl)statusEl.textContent=`Piezas correctas: ${pzSolvedCount}/${total}`;
+
     const scoreLive=document.getElementById('pzp-score-live');
     if(scoreLive){
       scoreLive.textContent=`★ ${pzLocalScore} pts`;
       scoreLive.style.borderColor='var(--green)';
       scoreLive.style.color='var(--green)';
-      setTimeout(()=>{scoreLive.style.borderColor='rgba(212,160,23,.3)';scoreLive.style.color='var(--gold)'},800);
+      setTimeout(()=>{
+        scoreLive.style.borderColor='rgba(212,160,23,.3)';
+        scoreLive.style.color='var(--gold)';
+      },700);
     }
-    document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolvedCount}/${total}`;
-    // Popup +pts
+
+    // Popup flotante de puntos
     const rect=slot.getBoundingClientRect();
     spawnPtsPopup(ptsPerPiece,rect.left+rect.width/2,rect.top+rect.height/2);
-    // Guardar en Firebase: qué pieza colocó quién
-    await update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc}`]:{name:playerName||'?',key:playerKey}});
-    // Sumar puntos al score global del jugador
-    const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
-    const curScore=(pSnap.val()||{}).score||0;
-    await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{
-      score:curScore+ptsPerPiece,
-      [`pts/pz_${sr}_${sc}`]:ptsPerPiece
-    });
-    // Tablero completo
-    if(pzSolvedCount>=total){
-      document.getElementById('pzp-status').textContent=`¡Rompecabezas completo! +${pzLocalScore} pts`;
+
+    // Mensaje de completado
+    if(pzSolvedCount>=total&&statusEl){
+      statusEl.textContent=`¡Rompecabezas completo! ★ +${pzLocalScore} pts`;
+    }
+
+    // Guardar en Firebase (async, después de actualizar UI)
+    try{
+      await update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[pieceKey]:{name:playerName||'?',key:playerKey}});
+      // Sumar puntos de forma atómica: leer score actual y sumar
+      const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
+      const curScore=(pSnap.val()||{}).score||0;
+      await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{
+        score:curScore+ptsPerPiece,
+        [`pts/pz_${pieceKey}`]:ptsPerPiece
+      });
+    }catch(err){
+      console.warn('Firebase puzzle update error:',err);
     }
   }
-  pzSelected=null;pzGhost.style.display='none';
+
+  pzSelected=null;
+  pzGhost.style.display='none';
 }
 
 /* ══════════════════════
@@ -1516,11 +1601,13 @@ function showPodium(room){
 /* ══ RESET ══ */
 document.getElementById('btn-reset').onclick=async()=>{
   clearL();clearInterval(timerInterval);clearInterval(hmpTimerInterval);
+  if(_pzMoveHandler)  {document.removeEventListener('pointermove',_pzMoveHandler);_pzMoveHandler=null}
+  if(_pzCancelHandler){document.removeEventListener('pointerdown',_pzCancelHandler);_pzCancelHandler=null}
   if(gameListenerRef)off(gameListenerRef);
   if(roomCode)await remove(ref(db,`rooms/${roomCode}`));
   roomCode=null;playerKey=null;playerName=null;answered=false;isHost=false;
   lastStatus='';hmWordIdx=0;hmpMisses=0;hmpRevealed=[];hmpUsed=[];hmpCurrentScore=0;
-  pzSelected=null;pzSolvedCount=0;pzLocalScore=0;
+  pzSelected=null;pzSolvedCount=0;pzLocalScore=0;_pzConfirmedKeys=new Set();
   show('sc-land');
 };
 </script>
