@@ -87,7 +87,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 .recv{font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-top:clamp(4px,.8vh,8px)}
 /* answer grid host */
 .ag{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.2vw,12px);width:100%;max-width:840px}
-.ag2{grid-template-columns:1fr 1fr;max-width:460px}
 .ab{position:relative;padding:clamp(11px,2vh,18px) clamp(12px,2vw,20px);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.022);text-align:left;overflow:hidden;display:flex;align-items:center;gap:10px}
 .ab::before{content:'';position:absolute;inset:0;opacity:0}
 .al{font-family:'Cinzel',serif;font-size:clamp(12px,1.7vw,17px);font-weight:700;color:var(--gold);flex-shrink:0;width:24px}
@@ -130,78 +129,66 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 /* ── PUZZLE HOST ── */
 #sc-pzhost{justify-content:flex-start;padding-top:clamp(14px,2.5vh,22px)}
 .pzh-top{display:flex;align-items:center;gap:clamp(8px,1.8vw,18px);width:100%;max-width:900px;flex-shrink:0;margin-bottom:8px}
-.pzh-board{display:grid;border:2px solid rgba(255,255,255,.1);background:#000;position:relative}
-.pzh-piece{position:absolute;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.12);transition:all .3s;cursor:default}
-.pzh-piece.solved{border-color:var(--green);box-shadow:0 0 12px rgba(76,175,125,.4)}
-.pzh-info{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.2vw,10px);color:var(--faint);letter-spacing:.16em;text-transform:uppercase;margin-top:6px}
-.pzh-label{font-family:'Cinzel',serif;font-size:clamp(11px,1.6vw,14px);color:var(--dim);margin-top:4px}
-
-/* ── PUZZLE PLAYER ── */
-#sc-pzplay{gap:clamp(8px,1.5vh,14px)}
-.pzp-board{display:grid;gap:3px;touch-action:none;position:relative;margin:0 auto}
-.pzp-slot{border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.2vw,10px);color:var(--faint)}
-.pzp-slot.has-piece{border-color:var(--gold);background:rgba(212,160,23,.05)}
-.pzp-slot.correct{border-color:var(--green);background:rgba(76,175,125,.1)}
-.pzp-piece{cursor:grab;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.2);transition:transform .15s,box-shadow .15s}
-.pzp-piece:active{cursor:grabbing;transform:scale(1.06);box-shadow:0 6px 24px rgba(0,0,0,.6);z-index:100}
-.pzp-tray{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:360px}
-.pzp-wait{font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.3vw,11px);letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
-
-/* ── HANGMAN HOST ── */
-#sc-hmhost{justify-content:flex-start;padding-top:clamp(14px,2.5vh,22px)}
-.hmh-top{display:flex;align-items:center;gap:clamp(8px,1.8vw,18px);width:100%;max-width:860px;flex-shrink:0}
-.hmh-body{display:flex;gap:clamp(16px,3vw,36px);align-items:flex-start;width:100%;max-width:860px;flex:1}
-/* puzzle group status rows */
 .pzg-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);margin-bottom:4px;transition:border-color .3s}
 .pzg-name{font-family:'Cinzel',serif;font-size:clamp(10px,1.4vw,13px);flex:1}
 .pzg-bar-wrap{width:clamp(80px,12vw,140px);height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
 .pzg-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s ease}
 .pzg-count{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);color:var(--gold);letter-spacing:.08em;white-space:nowrap}
 .pzg-row.done{border-color:var(--green)}.pzg-row.done .pzg-bar{background:var(--green)}
-/* hangman keyboard */
-.hm-key{font-family:'Cinzel',serif;font-size:clamp(11px,1.8vw,14px);font-weight:600;padding:clamp(7px,1.5vw,10px) clamp(5px,1.2vw,8px);border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;transition:all .15s;min-width:clamp(28px,5vw,36px);text-align:center;border-radius:2px}
-.hm-key:active{transform:scale(.9)}
-.hm-key.used-hit{background:rgba(76,175,125,.2);border-color:var(--green);color:var(--green);opacity:.5;pointer-events:none;cursor:default}
-.hm-key.used-miss{background:rgba(232,69,69,.12);border-color:var(--red);color:var(--red);opacity:.4;pointer-events:none;cursor:default}
-.hm-key.disabled{opacity:.25;pointer-events:none}
-/* hangman team cards */
+.pzh-info{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.2vw,10px);color:var(--faint);letter-spacing:.16em;text-transform:uppercase;margin-top:6px}
+.pzh-label{font-family:'Cinzel',serif;font-size:clamp(11px,1.6vw,14px);color:var(--dim);margin-top:4px}
+
+/* ── PUZZLE PLAYER ── */
+#sc-pzplay{gap:clamp(6px,1.2vh,10px);overflow-y:auto}
+.pzp-board{display:grid;gap:2px;touch-action:none;position:relative;margin:0 auto}
+.pzp-slot{border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;position:relative}
+.pzp-slot.has-piece{border-color:var(--gold);background:rgba(212,160,23,.05)}
+.pzp-slot.correct{border-color:var(--green)!important;background:rgba(76,175,125,.1)!important}
+.pzp-piece{cursor:pointer;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.2);transition:transform .15s,box-shadow .15s,outline .15s}
+.pzp-piece.selected{outline:3px solid var(--gold);transform:scale(1.08);z-index:50}
+.pzp-tray{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.pzp-wait{font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.3vw,11px);letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+
+/* ── pts-pop animación ── */
+@keyframes ptspop{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-52px) scale(1.3)}}
+.pts-pop{position:fixed;font-family:'Cinzel',serif;font-weight:900;font-size:clamp(20px,4vw,32px);pointer-events:none;z-index:9999;animation:ptspop .9s cubic-bezier(.23,1,.32,1) forwards;text-shadow:0 2px 16px rgba(0,0,0,.7)}
+.pts-pop.pos{color:var(--green)}
+.pts-pop.neg{color:var(--red)}
+
+/* ── HANGMAN HOST ── */
+#sc-hmhost{justify-content:flex-start;padding-top:clamp(14px,2.5vh,22px)}
+.hmh-top{display:flex;align-items:center;gap:clamp(8px,1.8vw,18px);width:100%;max-width:860px;flex-shrink:0}
+.hmh-word{display:flex;gap:clamp(6px,1.2vw,12px);flex-wrap:wrap;justify-content:center}
+.hmltr{font-family:'Cinzel',serif;font-size:clamp(18px,3.2vw,38px);font-weight:700;border-bottom:2px solid var(--gold);min-width:clamp(20px,3vw,36px);text-align:center;color:var(--text);padding-bottom:2px}
+.hmltr.hidden{color:transparent}
+.hmh-status{font-family:'Cinzel',serif;font-size:clamp(14px,2.2vw,22px);font-weight:700}
+.hmh-status.won{color:var(--green)}.hmh-status.lost{color:var(--red)}
 .hm-team-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.025);padding:clamp(8px,1.5vh,14px) clamp(10px,1.8vw,16px);display:flex;flex-direction:column;gap:4px;transition:border-color .3s,background .3s}
 .hm-team-card.won{border-color:var(--green);background:rgba(76,175,125,.08)}
 .hm-team-card.dead{border-color:var(--red);background:rgba(232,69,69,.06);opacity:.6}
 .hm-tc-name{font-family:'Cinzel',serif;font-size:clamp(10px,1.4vw,13px);font-weight:600;color:var(--text)}
-.hm-tc-lives{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);letter-spacing:.1em;color:var(--gold)}
 .hm-tc-hearts{font-size:clamp(11px,1.5vw,14px);letter-spacing:1px}
+.hm-tc-lives{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);letter-spacing:.1em;color:var(--gold)}
 .hm-tc-status{font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
-.hmh-left{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2vh,18px);flex:1}
-/* SVG gallows */
-.gallows-svg{width:clamp(130px,20vw,220px);height:clamp(130px,20vw,220px)}
-.hmh-word{display:flex;gap:clamp(6px,1.2vw,12px);flex-wrap:wrap;justify-content:center}
-.hmltr{font-family:'Cinzel',serif;font-size:clamp(18px,3.2vw,38px);font-weight:700;border-bottom:2px solid var(--gold);min-width:clamp(20px,3vw,36px);text-align:center;color:var(--text);padding-bottom:2px}
-.hmltr.hidden{color:transparent}
-.hmh-right{display:flex;flex-direction:column;gap:clamp(8px,1.5vh,14px);min-width:clamp(180px,28vw,280px)}
-.hmh-used{font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
-.hmh-letters{display:flex;flex-wrap:wrap;gap:5px}
-.hmlbl{font-family:'Cinzel',serif;font-size:clamp(11px,1.6vw,15px);font-weight:600;padding:4px 8px;border:1px solid rgba(255,255,255,.08)}
-.hmlbl.miss{color:var(--red);border-color:rgba(232,69,69,.3);background:rgba(232,69,69,.06)}
-.hmlbl.hit{color:var(--green);border-color:rgba(76,175,125,.3);background:rgba(76,175,125,.06)}
-.hmh-proposals{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto}
-.hmprop{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.2vw,10px);letter-spacing:.1em;padding:5px 10px;border:1px solid rgba(255,255,255,.06);color:var(--dim);animation:slin .3s ease forwards;opacity:0;display:flex;gap:8px}
-@keyframes slin{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-.hmprop-name{color:var(--gold)}
-.hmh-status{font-family:'Cinzel',serif;font-size:clamp(14px,2.2vw,22px);font-weight:700}
-.hmh-status.won{color:var(--green)}.hmh-status.lost{color:var(--red)}
+.hm-tc-score{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);color:var(--gold);letter-spacing:.1em;font-weight:700}
+
 /* ── HANGMAN PLAYER ── */
-#sc-hmplay{gap:clamp(10px,2vh,18px)}
+#sc-hmplay{gap:clamp(8px,1.6vh,14px);overflow-y:auto}
 .hmp-hint{font-size:clamp(12px,1.7vw,15px);color:var(--dim);font-style:italic;max-width:400px}
 .hmp-word{display:flex;gap:clamp(5px,1vw,10px);flex-wrap:wrap;justify-content:center}
 .hmp-ltr{font-family:'Cinzel',serif;font-size:clamp(16px,2.8vw,32px);font-weight:700;border-bottom:2px solid var(--gold);min-width:clamp(18px,2.8vw,32px);text-align:center;padding-bottom:2px}
 .hmp-ltr.hidden{color:transparent}
-.hmp-inp-row{display:flex;gap:8px;width:100%;max-width:280px}
-.hmp-inp{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);color:var(--text);font-family:'Cinzel',serif;font-size:clamp(18px,3vw,28px);padding:10px;text-align:center;letter-spacing:.1em;outline:none;width:60px;text-transform:uppercase;transition:border-color .3s}
-.hmp-inp:focus{border-color:var(--gold)}
-.hmp-lives{font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.3vw,11px);letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
-.hmp-lives span{color:var(--red)}
-.hmp-used{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1.1vw,10px);color:var(--faint);letter-spacing:.12em;max-width:320px}
+/* scoreboard en vivo ahorcado */
+.hm-score-live{font-family:'JetBrains Mono',monospace;font-size:clamp(11px,1.8vw,16px);letter-spacing:.12em;padding:6px 18px;border:1px solid var(--gold);background:rgba(212,160,23,.08);color:var(--gold);font-weight:700;min-width:120px;text-align:center;transition:background .3s}
+.hm-score-live.bump{background:rgba(76,175,125,.22)!important;border-color:var(--green)!important}
+.hm-score-live.bump-neg{background:rgba(232,69,69,.18)!important;border-color:var(--red)!important}
+.hm-lives-display{font-family:'JetBrains Mono',monospace;font-size:clamp(14px,2.2vw,20px);letter-spacing:.06em;color:var(--red)}
+/* teclado */
+.hm-key{font-family:'Cinzel',serif;font-size:clamp(11px,1.8vw,14px);font-weight:600;padding:clamp(7px,1.5vw,10px) clamp(5px,1.2vw,8px);border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;transition:all .15s;min-width:clamp(28px,5vw,36px);text-align:center;border-radius:2px}
+.hm-key:active{transform:scale(.9)}
+.hm-key.used-hit{background:rgba(76,175,125,.2);border-color:var(--green);color:var(--green);opacity:.7;pointer-events:none;cursor:default}
+.hm-key.used-miss{background:rgba(232,69,69,.12);border-color:var(--red);color:var(--red);opacity:.5;pointer-events:none;cursor:default}
+.hm-key.disabled{opacity:.25;pointer-events:none}
 
 /* ── RESULTS ── */
 #sc-res{gap:clamp(8px,1.5vh,13px)}
@@ -217,6 +204,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 .snm{font-family:'Crimson Pro',serif;font-size:clamp(12px,1.6vw,15px);flex:1}
 .spt{font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.3vw,12px);color:var(--gold);letter-spacing:.08em}
 .sdl{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,1vw,10px);color:var(--green);letter-spacing:.06em}
+
+@keyframes slin{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
 
 /* ── PLAYER RESULT ── */
 #sc-pr{gap:clamp(10px,2vh,16px)}
@@ -260,7 +249,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   <div class="btns">
     <button class="btn btn-g" id="btn-join" style="font-size:clamp(12px,1.8vw,16px);padding:clamp(14px,2.5vh,20px) clamp(32px,5vw,56px)">Unirme al juego</button>
   </div>
-  <!-- botón presentador — cuadrado discreto esquina inferior izquierda -->
   <button id="btn-host" title="Presentador" style="position:fixed;bottom:16px;left:16px;width:36px;height:36px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s;z-index:50;backdrop-filter:blur(4px)"></button>
 </div>
 
@@ -286,7 +274,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
       <div class="codenum" id="lh-code">----</div>
       <div class="codeurl" id="lh-url"></div>
     </div>
-    <!-- QR code -->
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
       <div class="codelbl">Escanear para unirse</div>
       <div id="lh-qr" style="background:#fff;padding:10px;border-radius:2px;line-height:0"></div>
@@ -345,7 +332,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
   </div>
 </div>
 
-<!-- PUZZLE HOST — solo observador, muestra imagen correcta + resultados por grupo -->
+<!-- PUZZLE HOST -->
 <div class="sc" id="sc-pzhost">
   <div class="pzh-top">
     <span class="qhmeta" id="pzh-title">Ronda 3 — Rompecabezas</span>
@@ -353,13 +340,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
     <div class="qhtimer" id="pz-timer">20</div>
   </div>
   <div style="display:flex;gap:clamp(12px,2.5vw,28px);align-items:flex-start;width:100%;max-width:900px;flex-wrap:wrap;justify-content:center;flex:1">
-    <!-- imagen correcta de referencia -->
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
       <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)">Imagen correcta</div>
       <img id="pzh-ref-img" src="" style="width:clamp(140px,22vw,240px);height:clamp(100px,16vw,180px);object-fit:cover;border:1px solid rgba(255,255,255,.15)" alt="">
       <div class="pzh-label" id="pzh-label" style="font-size:clamp(9px,1.2vw,11px);color:var(--dim)"></div>
     </div>
-    <!-- estado de grupos en tiempo real -->
     <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px">
       <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Estado de grupos</div>
       <div id="pzh-groups"></div>
@@ -371,16 +356,20 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 
 <!-- PUZZLE PLAYER -->
 <div class="sc" id="sc-pzplay">
-  <div class="qprnd">Ronda 3 — Rompecabezas</div>
-  <p style="font-size:clamp(10px,1.4vw,12px);color:var(--dim);font-style:italic">Tocá una pieza y luego tocá el lugar donde va</p>
+  <div class="qprnd" id="pzp-rnd">Ronda 3 — Rompecabezas</div>
+  <p style="font-size:clamp(9px,1.3vw,11px);color:var(--dim);font-style:italic">Tocá una pieza del tray, luego tocá el casillero donde va</p>
+  <!-- score en vivo del puzzle -->
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div id="pzp-score-live" style="font-family:'JetBrains Mono',monospace;font-size:clamp(10px,1.6vw,14px);color:var(--gold);letter-spacing:.1em;padding:4px 14px;border:1px solid rgba(212,160,23,.3);background:rgba(212,160,23,.06)">★ 0 pts</div>
+    <div id="pzp-timer-live" style="font-family:'Cinzel',serif;font-size:clamp(14px,2.2vw,20px);font-weight:700;color:var(--gold)">--</div>
+  </div>
   <div id="pzp-board" class="pzp-board"></div>
   <div id="pzp-tray" class="pzp-tray"></div>
   <div class="pzp-wait" id="pzp-status">Piezas correctas: 0</div>
 </div>
-<!-- pieza flotante que sigue el puntero -->
 <div id="pz-ghost" style="position:fixed;pointer-events:none;z-index:999;display:none;border:2px solid var(--gold);box-shadow:0 4px 24px rgba(0,0,0,.6);transform:translate(-50%,-50%);opacity:.85"></div>
 
-<!-- HANGMAN HOST — OBSERVER DASHBOARD -->
+<!-- HANGMAN HOST -->
 <div class="sc" id="sc-hmhost">
   <div class="hmh-top">
     <span class="qhmeta" id="hm-wordlbl">Palabra 1 / 3</span>
@@ -388,14 +377,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
     <button class="btn btn-g" id="hm-nextword" style="display:none;font-size:9px;padding:6px 14px">Siguiente palabra →</button>
     <button class="btn btn-g" id="hm-finish" style="display:none;font-size:9px;padding:6px 14px">Ver resultados →</button>
   </div>
-  <!-- word display centered -->
   <div class="hmh-word" id="hmh-word" style="margin:clamp(6px,1.5vh,12px) 0"></div>
   <div class="hmh-status" id="hmh-status"></div>
-  <!-- teams grid — one card per team showing lives + status -->
-  <div id="hm-teams-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:clamp(6px,1.2vw,12px);width:100%;max-width:860px;margin-top:clamp(6px,1.5vh,12px)"></div>
+  <div id="hm-teams-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:clamp(6px,1.2vw,12px);width:100%;max-width:860px;margin-top:clamp(6px,1.5vh,12px)"></div>
 </div>
 
-<!-- HANGMAN PLAYER — INDIVIDUAL -->
+<!-- HANGMAN PLAYER -->
 <div class="sc" id="sc-hmplay">
   <div class="qprnd">Ronda 4 — Ahorcado</div>
   <div style="display:flex;align-items:center;gap:clamp(10px,2vw,20px)">
@@ -412,13 +399,21 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
       <line id="hmp-ll" x1="130" y1="120" x2="108" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
       <line id="hmp-rl" x1="130" y1="120" x2="152" y2="150" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
     </svg>
-    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
-      <div class="hmp-lives">Vidas: <span id="hmp-lives">6</span> / 6</div>
-      <div id="hmp-result" style="display:none;font-family:'Cinzel',serif;font-size:clamp(14px,2.4vw,22px);font-weight:700"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px">
+      <!-- vidas visuales -->
+      <div class="hm-lives-display" id="hmp-hearts">♥♥♥♥♥♥</div>
+      <!-- SCORE EN VIVO — principal mejora visible -->
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--faint)">Puntaje</div>
+        <div class="hm-score-live" id="hm-score-live">0 pts</div>
+      </div>
     </div>
   </div>
   <div class="hmp-word" id="hmp-word"></div>
   <p class="hmp-hint" id="hmp-hint"></p>
+  <!-- último evento -->
+  <div id="hm-last-event" style="font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.4vw,12px);letter-spacing:.1em;min-height:18px;opacity:.8"></div>
+  <div id="hmp-result" style="display:none;font-family:'Cinzel',serif;font-size:clamp(14px,2.4vw,22px);font-weight:700"></div>
   <!-- teclado visual -->
   <div id="hmp-keyboard" style="display:flex;flex-direction:column;gap:4px;width:100%;max-width:360px"></div>
 </div>
@@ -456,33 +451,23 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getDatabase,ref,set,get,push,onValue,update,remove,off}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-/* ── QR generator (qrcode-generator lib) ── */
+/* QR */
 const qrScript=document.createElement('script');
 qrScript.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
 document.head.appendChild(qrScript);
-
 function generateQR(url){
-  const container=document.getElementById('lh-qr');
-  container.innerHTML='';
-  // wait for lib to load
+  const container=document.getElementById('lh-qr');container.innerHTML='';
   const tryGen=()=>{
     if(typeof QRCode==='undefined'){setTimeout(tryGen,100);return}
-    new QRCode(container,{
-      text:url,width:clamp(120,180),height:clamp(120,180),
-      colorDark:'#000000',colorLight:'#ffffff',
-      correctLevel:QRCode.CorrectLevel.M
-    });
-  };
-  tryGen();
+    new QRCode(container,{text:url,width:clampQR(),height:clampQR(),colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  };tryGen();
 }
-function clamp(min,max){return Math.min(max,Math.max(min,Math.round(Math.min(innerWidth,innerHeight)*.18)))}
+function clampQR(){return Math.min(180,Math.max(120,Math.round(Math.min(innerWidth,innerHeight)*.18)))}
+
 const FB={apiKey:"AIzaSyCBcJhlFbvWCzg-BgSV9--XEm2Hhum2d7o",authDomain:"museo-quiz-2ff3c.firebaseapp.com",databaseURL:"https://museo-quiz-2ff3c-default-rtdb.firebaseio.com",projectId:"museo-quiz-2ff3c",storageBucket:"museo-quiz-2ff3c.firebasestorage.app",messagingSenderId:"214344230284",appId:"1:214344230284:web:fa0d194dcf4da6cd4f62a9"};
 const app=initializeApp(FB);const db=getDatabase(app);
 
 /* ══ DATA ══ */
-// RONDA 1 — imagen misteriosa (2 imágenes, 7s)
-// imagen11 = Máquina de vapor → A=0 ✓
-// imagen16 = ENIAC → B=1 ✓
 const IMG_QS=[
   {q:'¿Qué invento histórico muestra esta imagen?',img:'imagen/imagen11.jpg',
    opts:['Máquina de vapor','Locomotora a vapor','Motor de combustión','Generador eléctrico'],ans:0,
@@ -491,9 +476,6 @@ const IMG_QS=[
    opts:['Primer satélite','ENIAC — primera computadora','Primer servidor web','Centro de control NASA'],ans:1,
    label:'ENIAC — Primera Computadora, 1945'},
 ];
-// RONDA 2 — adivina el video (2 videos, 7s)
-// video1 = La Rueda → A=0 ✓
-// video13 = IA Generativa → C=2 ✓
 const VID_QS=[
   {q:'¿Qué invento histórico muestra este video?',vid:'video/video1.mp4',
    opts:['La rueda','El arado','La palanca','El eje'],ans:0,
@@ -502,34 +484,36 @@ const VID_QS=[
    opts:['ARPANET','World Wide Web','IA Generativa','Computación cuántica'],ans:2,
    label:'IA Generativa — 2022'},
 ];
-// RONDA 3 — rompecabezas — 2 puzzles en secuencia
+
+/* ══ PUZZLES — definición completa con PUNTOS por pieza ══ */
 const PUZZLES=[
-  {img:'imagen/imagen16.jpg', label:'ENIAC — Primera Computadora, 1945', cols:2, rows:2, time:10},
-  {img:'imagen/imagen1.jpg',  label:'La Rueda — Mesopotamia, ~3500 a.C.',  cols:3, rows:3, time:40},
+  {img:'imagen/imagen16.jpg',label:'ENIAC — Primera Computadora, 1945',cols:2,rows:2,time:60,ptsPerPiece:100},
+  {img:'imagen/imagen1.jpg', label:'La Rueda — Mesopotamia, ~3500 a.C.',cols:3,rows:3,time:90,ptsPerPiece:75},
 ];
 let puzzleIdx=0;
-// RONDA 4 — ahorcado 20s por palabra
-const HM_TIME=20;
+
+/* ══ AHORCADO ══ */
+const HM_TIME=40;
 const HM_WORDS=[
-  {word:'ALGORITMO',hint:'Término que viene del nombre de Al-Juarismi',pts:400},
-  {word:'HELIOCENTRISMO',hint:'Modelo donde el Sol está en el centro',pts:500},
-  {word:'ENIAC',hint:'Primera computadora electrónica, 1945',pts:600},
+  {word:'ALGORITMO',   hint:'Término que viene del nombre de Al-Juarismi',pts:400},
+  {word:'HELIOCENTRISMO',hint:'Modelo donde el Sol está en el centro',    pts:500},
+  {word:'ENIAC',       hint:'Primera computadora electrónica, 1945',       pts:600},
 ];
-const HM_PARTS=['hm-head','hm-body','hm-la','hm-ra','hm-ll','hm-rl'];
+const HM_PARTS=['hmp-head','hmp-body','hmp-la','hmp-ra','hmp-ll','hmp-rl'];
+const PTS_HIT=80;   // puntos por letra correcta
+const PTS_MISS=-40; // penalización por letra incorrecta
 
 /* ══ STATE ══ */
 let isHost=false,roomCode=null,playerKey=null,playerName=null;
 let timeLeft=0,timerInterval=null,answered=false;
 let fbL=[];
-let lastStatus='',lastQShown=-1;
-// puzzle state
-let pzPieces=[],pzSlots=[],pzSolved=0;
-// hangman state
-let hmWordIdx=0,hmMisses=0,hmRevealed=[],hmUsed=[];
+let lastStatus='',hmWordIdx=0;
+let pzSelected=null,pzSolvedCount=0,pzLocalScore=0;
+let hmpRevealed=[],hmpMisses=0,hmpUsed=[],hmpWon=false,hmpDead=false;
+let hmpCurrentScore=0,hmpTimerInterval=null;
 
 /* ══ STARS ══ */
-const cv=document.getElementById('stars-cv'),ctx=cv.getContext('2d');
-let stars=[];
+const cv=document.getElementById('stars-cv'),ctx=cv.getContext('2d');let stars=[];
 function rsz(){cv.width=innerWidth;cv.height=innerHeight}
 function iS(){stars=[];for(let i=0;i<200;i++)stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.3+.2,a:Math.random(),da:(Math.random()-.5)*.006,sp:Math.random()*.08+.01})}
 function tS(){requestAnimationFrame(tS);ctx.clearRect(0,0,cv.width,cv.height);stars.forEach(s=>{s.a+=s.da;if(s.a<=0||s.a>=1)s.da*=-1;s.y-=s.sp;if(s.y<0){s.y=cv.height;s.x=Math.random()*cv.width}ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(212,160,23,${s.a*.42})`;ctx.fill()})}
@@ -541,6 +525,16 @@ function genCode(){return String(Math.floor(1000+Math.random()*9000))}
 function addL(r,fn){onValue(r,fn);fbL.push([r,fn])}
 function clearL(){fbL.forEach(([r,fn])=>off(r,fn));fbL=[]}
 function setNebula(col){document.getElementById('nbg').style.background=`radial-gradient(ellipse 60% 40% at 50%50%,${col} 0%,transparent 65%)`}
+
+/* ── Animación de puntos flotante ── */
+function spawnPtsPopup(pts,x,y){
+  const el=document.createElement('div');
+  el.className=`pts-pop ${pts>=0?'pos':'neg'}`;
+  el.textContent=pts>=0?`+${pts}`:String(pts);
+  el.style.left=x+'px';el.style.top=y+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),950);
+}
 
 /* ══ LANDING ══ */
 document.getElementById('btn-host').addEventListener('click',()=>{
@@ -585,15 +579,14 @@ function listenPlayers(){
     const cnt=Object.keys(pl).length;
     Object.values(pl).forEach(p=>{const c=document.createElement('div');c.className='pchip';c.textContent=p.name;list.appendChild(c)});
     document.getElementById('lh-cnt').textContent=`${cnt} jugador${cnt!==1?'es':''} conectado${cnt!==1?'s':''}`;
-    const btn=document.getElementById('btn-sg');btn.disabled=false;btn.style.opacity='1';
+    const btn=document.getElementById('btn-sg');btn.disabled=cnt<1;btn.style.opacity=cnt>=1?'1':'.38';
   });
 }
 
 /* ══ LISTEN GAME (player) ══ */
-/* ══ LISTEN GAME (player) — listener persistente que nunca se limpia ══ */
 let gameListenerRef=null;
 function listenGame(){
-  if(gameListenerRef)off(gameListenerRef); // limpiar solo el listener de juego previo
+  if(gameListenerRef)off(gameListenerRef);
   gameListenerRef=ref(db,`rooms/${roomCode}`);
   onValue(gameListenerRef,snap=>{
     if(!snap.exists())return;
@@ -603,35 +596,38 @@ function listenGame(){
     const key=`${st}|${ph}|${cq}|${hmwi}`;
     if(key===lastStatus)return;
     lastStatus=key;
-    if(st==='round-intro'){showRoundIntroPlayer(room)}
-    else if(st==='playing-img'){showImgQPlayer(cq)}
-    else if(st==='playing-vid'){showVidQPlayer(cq)}
-    else if(st==='results'){showPlayerResult(room)}
-    else if(st==='puzzle'){showPuzzlePlayer()}
-    else if(st==='puzzle-end'){if(!isHost)lockPuzzlePlayer()}
-    else if(st==='hangman'){if(!isHost)showHangmanPlayer(room)}
-    else if(st==='hm-update'){if(!isHost)updateHangmanPlayer(room)}
-    else if(st==='podium'){showPodium(room)}
+    if(st==='round-intro')showRoundIntroPlayer(room);
+    else if(st==='playing-img')showImgQPlayer(cq);
+    else if(st==='playing-vid')showVidQPlayer(cq);
+    else if(st==='results')showPlayerResult(room);
+    else if(st==='puzzle')showPuzzlePlayer();
+    else if(st==='puzzle-end'&&!isHost)lockPuzzlePlayer();
+    else if(st==='hangman'&&!isHost)showHangmanPlayer(room);
+    else if(st==='podium')showPodium(room);
+  });
+  /* timer del puzzle en vivo para el jugador */
+  onValue(ref(db,`rooms/${roomCode}/timeLeft`),snap=>{
+    if(snap.val()===null||snap.val()===undefined)return;
+    timeLeft=snap.val();
+    const tEl=document.getElementById('pzp-timer-live');
+    if(tEl)tEl.textContent=`⏱ ${timeLeft}s`;
+    if(tEl)tEl.style.color=timeLeft<=10?'var(--red)':'var(--gold)';
   });
 }
 
 /* ══ START GAME ══ */
-document.getElementById('btn-sg').onclick=()=>{startRound1()};
+document.getElementById('btn-sg').onclick=()=>startRound1();
 
-/* ══════════════════════
-   RONDA 1 — IMÁGENES
-══════════════════════ */
+/* ══════════════════════ RONDA 1 — IMÁGENES ══════════════════════ */
 function startRound1(){
   setNebula('rgba(46,109,180,.18)');
   update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'img',currentQ:0});
   showRoundIntro(1,'Imagen Misteriosa','Identificá el hito histórico por la imagen',()=>startImgQ(0));
 }
-
 function startImgQ(idx){
   if(idx>=IMG_QS.length){showResults('img',idx-1);return}
   const q=IMG_QS[idx];
   update(ref(db,`rooms/${roomCode}`),{status:'playing-img',phase:'img',currentQ:idx});
-  // HOST UI
   document.getElementById('qh-meta').textContent=`Imagen ${idx+1}/${IMG_QS.length}`;
   document.getElementById('qh-rnd').textContent='Ronda 1 — Imagen Misteriosa';
   document.getElementById('qh-q').textContent=q.q;
@@ -645,7 +641,6 @@ function startImgQ(idx){
   listenAnswers(idx,'img');
   startHostTimer(10,idx,'img',()=>revealImgVid(idx,'img'));
 }
-
 function showImgQPlayer(idx){
   if(idx>=IMG_QS.length)return;
   const q=IMG_QS[idx];
@@ -654,18 +649,14 @@ function showImgQPlayer(idx){
   document.getElementById('qp-q').textContent=q.q;
   buildPlayerGrid(q.opts,idx,'img');
   show('sc-qp');
-  listenTimerPlayer();
 }
 
-/* ══════════════════════
-   RONDA 2 — VIDEOS
-══════════════════════ */
+/* ══════════════════════ RONDA 2 — VIDEOS ══════════════════════ */
 function startRound2(){
   setNebula('rgba(194,98,45,.18)');
   update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'vid',currentQ:0});
   showRoundIntro(2,'Adivina el Video','¿A qué hito pertenece este video?',()=>startVidQ(0));
 }
-
 function startVidQ(idx){
   if(idx>=VID_QS.length){showResults('vid',idx-1);return}
   const q=VID_QS[idx];
@@ -686,7 +677,6 @@ function startVidQ(idx){
   listenAnswers(idx,'vid');
   startHostTimer(10,idx,'vid',()=>revealImgVid(idx,'vid'));
 }
-
 function showVidQPlayer(idx){
   if(idx>=VID_QS.length)return;
   const q=VID_QS[idx];
@@ -695,11 +685,11 @@ function showVidQPlayer(idx){
   document.getElementById('qp-q').textContent=q.q;
   buildPlayerGrid(q.opts,idx,'vid');
   show('sc-qp');
-  listenTimerPlayer();
 }
 
 /* ══════════════════════
    RONDA 3 — ROMPECABEZAS
+   FIX: puntos por pieza correcta, tracking local + Firebase
 ══════════════════════ */
 function startRound3(){
   setNebula('rgba(76,175,125,.18)');
@@ -715,15 +705,24 @@ function startPuzzleHost(pIdx){
   timeLeft=pz.time;
   window._lastPuzzleSolved={};
   clearL();
-  update(ref(db,`rooms/${roomCode}`),{status:'puzzle',phase:'pz',currentQ:pIdx,puzzleImg:pz.img,puzzleLabel:pz.label,puzzleCols:pz.cols,puzzleRows:pz.rows,puzzleSolved:{},timeLeft:pz.time});
-  // HOST: muestra la imagen grande mientras los grupos la arman
+  // Limpiar puzzleSolved y puzzleScores al iniciar
+  remove(ref(db,`rooms/${roomCode}/puzzleSolved`));
+  remove(ref(db,`rooms/${roomCode}/puzzleScores`));
+  update(ref(db,`rooms/${roomCode}`),{
+    status:'puzzle',phase:'pz',currentQ:pIdx,
+    puzzleImg:pz.img,puzzleLabel:pz.label,
+    puzzleCols:pz.cols,puzzleRows:pz.rows,
+    ptsPerPiece:pz.ptsPerPiece,
+    timeLeft:pz.time
+  });
+  // UI host
   document.getElementById('pzh-title').textContent=`Rompecabezas ${pIdx+1}/${PUZZLES.length}`;
   document.getElementById('pzh-ref-img').src=pz.img;
   document.getElementById('pzh-ref-img').style.cssText='width:clamp(200px,38vw,500px);height:clamp(140px,28vw,360px);object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 40px var(--glow)';
   document.getElementById('pzh-label').textContent=pz.label;
   document.getElementById('pzh-groups').innerHTML='';
   document.getElementById('pzh-groups').style.display='none';
-  document.getElementById('pzh-info').textContent=`¡Los grupos están armando esta imagen! (${pz.cols}×${pz.rows} piezas)`;
+  document.getElementById('pzh-info').textContent=`¡Los grupos están armando esta imagen! (${pz.cols}×${pz.rows} = ${pz.cols*pz.rows} piezas · ${pz.ptsPerPiece} pts c/u)`;
   document.getElementById('pz-next').style.display='none';
   show('sc-pzhost');
   const pf=document.getElementById('pz-pf');
@@ -732,45 +731,59 @@ function startPuzzleHost(pIdx){
   document.getElementById('pz-timer').textContent=pz.time;
   timerInterval=setInterval(()=>{
     timeLeft--;
-    document.getElementById('pz-timer').textContent=timeLeft;
-    document.getElementById('pz-timer').classList.toggle('hot',timeLeft<=5);
+    const tEl=document.getElementById('pz-timer');
+    tEl.textContent=timeLeft;tEl.classList.toggle('hot',timeLeft<=5);
     update(ref(db,`rooms/${roomCode}`),{timeLeft});
-    if(timeLeft<=0){
-      clearInterval(timerInterval);
-      update(ref(db,`rooms/${roomCode}`),{status:'puzzle-end',phase:'pz',currentQ:pIdx});
-      endPuzzle(pIdx);
-    }
+    if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
-  // guardar solved silenciosamente para mostrarlo al final
-  addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{window._lastPuzzleSolved=snap.val()||{}});
+  // Escuchar estado de puzzles en tiempo real — grupos
+  addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
+    window._lastPuzzleSolved=snap.val()||{};
+    updateHostPuzzleGroups(snap.val()||{},pz);
+  });
   listenPlayers();
+}
+
+function updateHostPuzzleGroups(solved,pz){
+  const total=pz.cols*pz.rows;
+  const byPlayer={};
+  Object.entries(solved).forEach(([key,data])=>{
+    const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
+    if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++;
+  });
+  const container=document.getElementById('pzh-groups');
+  container.style.display='block';
+  // Update existing rows or add new
+  const existing={};
+  container.querySelectorAll('.pzg-row').forEach(r=>{existing[r.dataset.name]=r});
+  Object.entries(byPlayer).sort((a,b)=>b[1]-a[1]).forEach(([nm,cnt])=>{
+    const pct=Math.round(cnt/total*100);const done=cnt>=total;
+    if(existing[nm]){
+      existing[nm].className=`pzg-row${done?' done':''}`;
+      existing[nm].querySelector('.pzg-bar').style.width=pct+'%';
+      existing[nm].querySelector('.pzg-count').textContent=`${cnt}/${total} piezas · ${cnt*pz.ptsPerPiece}pts`;
+    } else {
+      const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;row.dataset.name=nm;
+      row.innerHTML=`<span class="pzg-name">${nm}</span><div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div><span class="pzg-count">${cnt}/${total} piezas · ${cnt*pz.ptsPerPiece}pts</span>`;
+      container.appendChild(row);
+    }
+  });
 }
 
 function endPuzzle(pIdx){
   clearInterval(timerInterval);
-  // push puzzle-end to Firebase to lock all player boards
   if(isHost)update(ref(db,`rooms/${roomCode}`),{status:'puzzle-end',phase:'pz',currentQ:pIdx});
   const pz=PUZZLES[pIdx];
   const solved=window._lastPuzzleSolved||{};
   const total=pz.cols*pz.rows;
-  // shrink image and show group results
   document.getElementById('pzh-ref-img').style.cssText='width:clamp(100px,16vw,180px);height:clamp(70px,12vw,130px);object-fit:cover;border:1px solid var(--gold)';
   document.getElementById('pzh-groups').style.display='block';
   document.getElementById('pzh-info').textContent='Tiempo agotado — así quedaron los grupos:';
-  // build per-group results
   const byPlayer={};
-  Object.entries(solved).forEach(([key,nm])=>{if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++});
-  const container=document.getElementById('pzh-groups');container.innerHTML='';
-  Object.entries(byPlayer).sort((a,b)=>b[1]-a[1]).forEach(([nm,cnt])=>{
-    const pct=Math.round(cnt/total*100);
-    const done=cnt>=total;
-    const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;
-    row.innerHTML=`<span class="pzg-name">${nm}</span><div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div><span class="pzg-count">${cnt}/${total} piezas</span>`;
-    container.appendChild(row);
+  Object.entries(solved).forEach(([key,data])=>{
+    const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
+    if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++;
   });
-  if(Object.keys(byPlayer).length===0){
-    container.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--faint);letter-spacing:.12em">Ningún grupo colocó piezas correctamente</div>';
-  }
   const isLast=pIdx>=PUZZLES.length-1;
   const btn=document.getElementById('pz-next');
   btn.textContent=isLast?'Ver resultados finales →':'Siguiente rompecabezas →';
@@ -780,24 +793,23 @@ function endPuzzle(pIdx){
 document.getElementById('pz-next').onclick=()=>{
   const isLast=puzzleIdx>=PUZZLES.length-1;
   if(isLast){
-    update(ref(db,`rooms/${roomCode}`),{status:'results',phase:'pz',currentQ:puzzleIdx});  // puzzle-end already sent
+    update(ref(db,`rooms/${roomCode}`),{status:'results',phase:'pz',currentQ:puzzleIdx});
     showPuzzleResults();
   } else {
     const nextIdx=puzzleIdx+1;
     const pz=PUZZLES[nextIdx];
-    remove(ref(db,`rooms/${roomCode}/puzzleSolved`));
     update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'pz',currentQ:nextIdx});
-    showRoundIntro(3,`Rompecabezas ${nextIdx+1}/${PUZZLES.length}`,`${pz.cols}×${pz.rows} — ${pz.time} segundos`,()=>startPuzzleHost(nextIdx));
+    showRoundIntro(3,`Rompecabezas ${nextIdx+1}/${PUZZLES.length}`,`${pz.cols}×${pz.rows} — ${pz.time} segundos · ${pz.ptsPerPiece} pts por pieza`,()=>startPuzzleHost(nextIdx));
   }
 };
 
 function lockPuzzlePlayer(){
-  // deshabilitar toda interacción del rompecabezas
   pzSelected=null;
-  document.getElementById('pz-ghost').style.display='none';
-  document.querySelectorAll('.pzp-piece').forEach(p=>p.style.pointerEvents='none');
+  const ghost=document.getElementById('pz-ghost');if(ghost)ghost.style.display='none';
+  document.querySelectorAll('.pzp-piece').forEach(p=>{p.style.pointerEvents='none';p.classList.remove('selected')});
   document.querySelectorAll('.pzp-slot').forEach(s=>s.style.pointerEvents='none');
-  document.getElementById('pzp-status').textContent+=' — ¡Tiempo!';
+  const status=document.getElementById('pzp-status');
+  if(status)status.textContent=`¡Tiempo! Piezas correctas: ${pzSolvedCount}`;
 }
 
 async function showPuzzleResults(){
@@ -806,42 +818,21 @@ async function showPuzzleResults(){
   const solvedSnap=await get(ref(db,`rooms/${roomCode}/puzzleSolved`));
   const solved=solvedSnap.val()||{};
   const total=pz.cols*pz.rows;
-  // count per player
   const byPlayer={};
-  Object.entries(solved).forEach(([key,nm])=>{
-    if(!byPlayer[nm])byPlayer[nm]={cnt:0,keys:[]};
-    byPlayer[nm].cnt++;byPlayer[nm].keys.push(key);
+  Object.entries(solved).forEach(([key,data])=>{
+    const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
+    if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++;
   });
-  // build custom results screen
   document.getElementById('r-rnd').textContent='Ronda 3 — Rompecabezas';
   document.getElementById('r-q').textContent=pz.label;
-  document.getElementById('r-badge').textContent=`${total} piezas en total`;
+  document.getElementById('r-badge').textContent=`${total} piezas · ${pz.ptsPerPiece} pts c/u`;
   const sc=document.getElementById('r-scores');sc.innerHTML='';
-  // sorted by pieces desc
-  const sorted=Object.entries(byPlayer).sort((a,b)=>b[1].cnt-a[1].cnt);
-  sorted.forEach(([nm,data],i)=>{
+  const sorted=Object.entries(byPlayer).sort((a,b)=>b[1]-a[1]);
+  sorted.forEach(([nm,cnt],i)=>{
+    const pts=cnt*pz.ptsPerPiece;
     const row=document.createElement('div');row.className=`srow ${i===0?'s1':i===1?'s2':i===2?'s3':''}`;
     row.style.animationDelay=`${i*.07}s`;
-    row.style.alignItems='center';row.style.gap='12px';
-    // mini canvas showing solved pieces
-    const canvas=document.createElement('canvas');
-    const csize=48;canvas.width=csize;canvas.height=csize;canvas.style.cssText='flex-shrink:0;border:1px solid rgba(255,255,255,.15)';
-    const ctx2=canvas.getContext('2d');
-    const img2=new Image();
-    img2.onload=()=>{
-      const pw2=Math.floor(csize/pz.cols),ph2=Math.floor(csize/pz.rows);
-      data.keys.forEach(k=>{
-        const[r,cc]=k.split('_').map(Number);
-        ctx2.drawImage(img2,cc*(img2.width/pz.cols),r*(img2.height/pz.rows),img2.width/pz.cols,img2.height/pz.rows,cc*pw2,r*ph2,pw2,ph2);
-      });
-    };
-    img2.src=pz.img;
-    const pts=data.cnt*50;
-    row.innerHTML=`<span class="srk">${i+1}</span>`;
-    row.appendChild(canvas);
-    const info=document.createElement('span');info.className='snm';info.textContent=nm;row.appendChild(info);
-    const pzCnt=document.createElement('span');pzCnt.style.cssText="font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1.2vw,11px);color:var(--dim)";pzCnt.textContent=`${data.cnt}/${total}`;row.appendChild(pzCnt);
-    const ptEl=document.createElement('span');ptEl.className='spt';ptEl.textContent=`+${pts}`;row.appendChild(ptEl);
+    row.innerHTML=`<span class="srk">${i+1}</span><span class="snm">${nm}</span><span class="spt">${cnt}/${total} piezas</span><span class="sdl">+${pts}</span>`;
     sc.appendChild(row);
   });
   if(sorted.length===0)sc.innerHTML="<div style=\"font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)\">Ningún grupo colocó piezas</div>";
@@ -850,23 +841,25 @@ async function showPuzzleResults(){
   show('sc-res');
 }
 
+/* ── PUZZLE PLAYER: reconstruye el tablero ── */
 function showPuzzlePlayer(){
+  pzSolvedCount=0;pzLocalScore=0;pzSelected=null;
   get(ref(db,`rooms/${roomCode}`)).then(snap=>{
     const room=snap.val()||{};
     const img=room.puzzleImg||PUZZLES[0].img;
     const cols=room.puzzleCols||2;
     const rows=room.puzzleRows||2;
-    _buildPuzzlePlayer(img,cols,rows);
+    const ptsPerPiece=room.ptsPerPiece||100;
+    _buildPuzzlePlayer(img,cols,rows,ptsPerPiece);
   });
 }
 
-function _buildPuzzlePlayer(img,cols,rows){
+function _buildPuzzlePlayer(img,cols,rows,ptsPerPiece){
   const image=new Image();
   image.onload=()=>{
     const ratio=image.naturalWidth/image.naturalHeight;
-    // tamaño máximo según pantalla — más pequeño para 3x3
-    const maxW=Math.min(innerWidth*.92, cols>2 ? 270 : 320);
-    const maxH=Math.min(innerHeight*.38, cols>2 ? 220 : 260);
+    const maxW=Math.min(innerWidth*.92,cols>2?260:310);
+    const maxH=Math.min(innerHeight*.4,cols>2?200:250);
     let bw=maxW,bh=bw/ratio;
     if(bh>maxH){bh=maxH;bw=bh*ratio}
     bw=Math.floor(bw);bh=Math.floor(bh);
@@ -874,177 +867,196 @@ function _buildPuzzlePlayer(img,cols,rows){
     const ph=Math.floor(bh/rows);
     const exactW=pw*cols;const exactH=ph*rows;
     const total=cols*rows;
-    pzPieces=[];
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) pzPieces.push({r,c});
-    // shuffle garantizado — ninguna pieza en su posición correcta
-    do { pzPieces.sort(()=>Math.random()-.5) }
-    while(pzPieces.some((p,i)=>p.r===Math.floor(i/cols)&&p.c===i%cols));
-    pzSolved=0;
 
-    // board de slots
+    // Actualizar marcador en vivo
+    const scoreLive=document.getElementById('pzp-score-live');
+    if(scoreLive)scoreLive.textContent=`★ ${pzLocalScore} pts`;
+
+    // Crear lista de piezas y mezclar bien
+    let pieces=[];
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)pieces.push({r,c});
+    do{pieces.sort(()=>Math.random()-.5)}
+    while(pieces.length>1&&pieces.some((p,i)=>p.r===Math.floor(i/cols)&&p.c===i%cols));
+
+    // Slot board
     const board=document.getElementById('pzp-board');board.innerHTML='';
     board.style.cssText=`display:grid;grid-template-columns:repeat(${cols},${pw}px);grid-template-rows:repeat(${rows},${ph}px);gap:2px`;
     for(let r=0;r<rows;r++){
       for(let c=0;c<cols;c++){
         const slot=document.createElement('div');slot.className='pzp-slot';
-        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative;touch-action:none;cursor:pointer`;
+        slot.style.cssText=`width:${pw}px;height:${ph}px;position:relative;cursor:pointer`;
         slot.dataset.r=r;slot.dataset.c=c;
+        // número del slot
         const lbl=document.createElement('span');
-        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:8px;color:rgba(255,255,255,.2);pointer-events:none';
+        lbl.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'JetBrains Mono\',monospace;font-size:clamp(7px,1.5vw,10px);color:rgba(255,255,255,.2);pointer-events:none;z-index:1';
         lbl.textContent=r*cols+c+1;slot.appendChild(lbl);
         board.appendChild(slot);
       }
     }
 
-    // tray de piezas
+    // Tray de piezas
     const tray=document.getElementById('pzp-tray');tray.innerHTML='';
     tray.style.cssText=`display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:${exactW+20}px`;
-    pzPieces.forEach(p=>{
+    pieces.forEach(p=>{
       const piece=document.createElement('div');piece.className='pzp-piece';
-      piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:pointer;border:1px solid rgba(255,255,255,.22);touch-action:none`;
+      piece.style.cssText=`width:${pw}px;height:${ph}px;background-image:url('${img}');background-size:${exactW}px ${exactH}px;background-position:-${p.c*pw}px -${p.r*ph}px;flex-shrink:0;cursor:pointer;touch-action:none`;
       piece.dataset.r=p.r;piece.dataset.c=p.c;
       tray.appendChild(piece);
     });
+
     document.getElementById('pzp-status').textContent=`Piezas correctas: 0/${total}`;
+    document.getElementById('pzp-rnd').textContent=`Rompecabezas — armá la imagen`;
     show('sc-pzplay');
-    setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total);
+    setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total,ptsPerPiece);
   };
-  image.onerror=()=>{ _buildPuzzlePlayer(PUZZLES[0].img,cols,rows) };
+  image.onerror=()=>{_buildPuzzlePlayer(PUZZLES[0].img,cols,rows,ptsPerPiece)};
   image.src=img;
 }
 
-/* ── sistema de interacción: tap para seleccionar, tap para colocar ── */
-let pzSelected=null; // pieza actualmente seleccionada
+/* ── Interacción puzzle: tap para seleccionar, tap para colocar ── */
 const pzGhost=document.getElementById('pz-ghost');
 
-function setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total){
-  pzSelected=null;
-  pzGhost.style.display='none';
-  pzGhost.style.width=pw+'px';
-  pzGhost.style.height=ph+'px';
+function setupPuzzleInteraction(img,cols,rows,pw,ph,exactW,exactH,total,ptsPerPiece){
+  pzSelected=null;pzGhost.style.display='none';
+  pzGhost.style.width=pw+'px';pzGhost.style.height=ph+'px';
 
-  // mover ghost con el puntero
-  document.addEventListener('pointermove',onPzPointerMove);
-
-  function onPzPointerMove(e){
+  function onMove(e){
     if(!pzSelected)return;
-    pzGhost.style.left=e.clientX+'px';
-    pzGhost.style.top=e.clientY+'px';
+    const x=e.clientX||e.touches?.[0]?.clientX;
+    const y=e.clientY||e.touches?.[0]?.clientY;
+    if(x&&y){pzGhost.style.left=x+'px';pzGhost.style.top=y+'px'}
   }
+  document.addEventListener('pointermove',onMove);
 
-  // tap en pieza del tray — seleccionar
-  document.getElementById('pzp-tray').addEventListener('pointerdown',e=>{
+  // TAP en tray — seleccionar pieza
+  const tray=document.getElementById('pzp-tray');
+  tray.addEventListener('pointerdown',e=>{
+    e.preventDefault();
     const piece=e.target.closest('.pzp-piece');
     if(!piece)return;
-    e.preventDefault();
-    selectPiece(piece,img,exactW,exactH);
-  });
+    selectPzPiece(piece,img,exactW,exactH);
+  },{passive:false});
 
-  // tap en slot del board — colocar
-  document.getElementById('pzp-board').addEventListener('pointerdown',e=>{
+  // TAP en board — colocar pieza
+  const board=document.getElementById('pzp-board');
+  board.addEventListener('pointerdown',e=>{
     e.preventDefault();
-    const slot=e.target.closest('.pzp-slot,.pzp-piece');
-    if(!slot)return;
-    // si toca una pieza YA en un slot, seleccionarla
-    if(slot.classList.contains('pzp-piece')&&!slot.parentElement.classList.contains('pzp-tray')){
-      if(slot.parentElement.classList.contains('correct'))return;
-      const parentSlot=slot.parentElement;
-      parentSlot.innerHTML='';
-      parentSlot.classList.remove('has-piece');
-      document.getElementById('pzp-tray').appendChild(slot);
-      selectPiece(slot,img,exactW,exactH);
-      return;
+    // Si tocó una pieza ya en el board (no correcta) → devolverla al tray
+    const touchedPiece=e.target.closest('.pzp-piece');
+    if(touchedPiece){
+      const parentSlot=touchedPiece.parentElement;
+      if(parentSlot&&parentSlot.classList.contains('correct'))return;
+      if(parentSlot&&parentSlot.classList.contains('pzp-slot')){
+        parentSlot.classList.remove('has-piece');
+        parentSlot.querySelectorAll('.pzp-piece').forEach(p=>p.remove());
+        tray.appendChild(touchedPiece);
+        touchedPiece.style.outline='';touchedPiece.classList.remove('selected');
+        selectPzPiece(touchedPiece,img,exactW,exactH);
+        return;
+      }
     }
     if(!pzSelected)return;
-    const targetSlot=slot.classList.contains('pzp-slot')?slot:slot.parentElement;
-    if(!targetSlot.classList.contains('pzp-slot'))return;
-    placePiece(targetSlot,cols,rows,pw,ph,total);
-  });
+    const slot=e.target.closest('.pzp-slot');
+    if(!slot)return;
+    placePzPiece(slot,cols,rows,pw,ph,total,ptsPerPiece,tray);
+  },{passive:false});
 
-  // cancelar con click fuera
+  // cancelar selección con tap fuera
   document.addEventListener('pointerdown',e=>{
-    if(pzSelected&&!e.target.closest('#pzp-board,#pzp-tray')){
-      deselectPiece();
-    }
+    if(pzSelected&&!e.target.closest('#pzp-board,#pzp-tray')){deselectPz()}
   });
 }
 
-function selectPiece(piece,img,exactW,exactH){
-  if(pzSelected)pzSelected.style.outline='';
+function selectPzPiece(piece,img,exactW,exactH){
+  if(pzSelected){pzSelected.classList.remove('selected')}
   pzSelected=piece;
-  piece.style.outline='2px solid var(--gold)';
-  // mostrar ghost
+  piece.classList.add('selected');
   pzGhost.style.backgroundImage=piece.style.backgroundImage;
   pzGhost.style.backgroundSize=piece.style.backgroundSize;
   pzGhost.style.backgroundPosition=piece.style.backgroundPosition;
   pzGhost.style.display='block';
 }
 
-function deselectPiece(){
-  if(pzSelected)pzSelected.style.outline='';
-  pzSelected=null;
-  pzGhost.style.display='none';
+function deselectPz(){
+  if(pzSelected)pzSelected.classList.remove('selected');
+  pzSelected=null;pzGhost.style.display='none';
 }
 
-function placePiece(slot,cols,rows,pw,ph,total){
+async function placePzPiece(slot,cols,rows,pw,ph,total,ptsPerPiece,tray){
   if(!pzSelected)return;
   if(slot.classList.contains('correct'))return;
-  const sr=parseInt(slot.dataset.r),sc_=parseInt(slot.dataset.c);
+  const sr=parseInt(slot.dataset.r),sc=parseInt(slot.dataset.c);
   const pr=parseInt(pzSelected.dataset.r),pc=parseInt(pzSelected.dataset.c);
-  // si el slot ya tiene pieza, devolver al tray
+  // devolver pieza existente al tray si hay una
   const existing=slot.querySelector('.pzp-piece');
   if(existing){
-    existing.style.outline='';
-    document.getElementById('pzp-tray').appendChild(existing);
+    existing.classList.remove('selected');
+    tray.appendChild(existing);
   }
+  // eliminar etiqueta de número si la hay
   slot.querySelectorAll('span').forEach(s=>s.remove());
-  pzSelected.style.outline='';
+  pzSelected.classList.remove('selected');
   slot.appendChild(pzSelected);
   slot.classList.add('has-piece');
-  if(sr===pr&&sc_===pc){
+
+  const correct=(sr===pr&&sc===pc);
+  if(correct){
     slot.classList.add('correct');
-    pzSolved++;
-    document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolved}/${total}`;
-    update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc_}`]:playerName||'?'});
-    get(ref(db,`rooms/${roomCode}/players/${playerKey}`)).then(snap=>{
-      const p=snap.val()||{};
-      update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:(p.score||0)+50,[`pts/pz_${sr}_${sc_}`]:50});
+    pzSolvedCount++;
+    pzLocalScore+=ptsPerPiece;
+    // Actualizar score en vivo
+    const scoreLive=document.getElementById('pzp-score-live');
+    if(scoreLive){
+      scoreLive.textContent=`★ ${pzLocalScore} pts`;
+      scoreLive.style.borderColor='var(--green)';
+      scoreLive.style.color='var(--green)';
+      setTimeout(()=>{scoreLive.style.borderColor='rgba(212,160,23,.3)';scoreLive.style.color='var(--gold)'},800);
+    }
+    document.getElementById('pzp-status').textContent=`Piezas correctas: ${pzSolvedCount}/${total}`;
+    // Popup +pts
+    const rect=slot.getBoundingClientRect();
+    spawnPtsPopup(ptsPerPiece,rect.left+rect.width/2,rect.top+rect.height/2);
+    // Guardar en Firebase: qué pieza colocó quién
+    await update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[`${sr}_${sc}`]:{name:playerName||'?',key:playerKey}});
+    // Sumar puntos al score global del jugador
+    const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
+    const curScore=(pSnap.val()||{}).score||0;
+    await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{
+      score:curScore+ptsPerPiece,
+      [`pts/pz_${sr}_${sc}`]:ptsPerPiece
     });
+    // Tablero completo
+    if(pzSolvedCount>=total){
+      document.getElementById('pzp-status').textContent=`¡Rompecabezas completo! +${pzLocalScore} pts`;
+    }
   }
-  pzSelected=null;
-  pzGhost.style.display='none';
+  pzSelected=null;pzGhost.style.display='none';
 }
 
 /* ══════════════════════
    RONDA 4 — AHORCADO
+   FIX COMPLETO: puntos visibles, +/- en tiempo real, popup flotante
 ══════════════════════ */
 function startRound4(){
   setNebula('rgba(232,69,69,.18)');
   update(ref(db,`rooms/${roomCode}`),{status:'round-intro',phase:'hm',currentQ:0});
-  showRoundIntro(4,'Ahorcado','Propongan letras desde su dispositivo — 3 palabras',()=>startHangmanWord(0));
+  showRoundIntro(4,'Ahorcado','Adiviná las palabras históricas letra por letra',()=>startHangmanWord(0));
 }
 
-/* ══════════════════════
-   RONDA 4 — AHORCADO
-   - Cada jugador tiene su propio estado local
-   - Host observa en tiempo real el estado de cada equipo
-   - Players escriben letras individualmente
-══════════════════════ */
-const HM_PLAYER_PARTS=['hmp-head','hmp-body','hmp-la','hmp-ra','hmp-ll','hmp-rl'];
+const HM_ROWS=['QWERTYUIOP','ASDFGHJKLÑ','ZXCVBNM'];
 
 function startHangmanWord(wIdx){
   if(wIdx>=HM_WORDS.length){endHangman();return}
   hmWordIdx=wIdx;
   const w=HM_WORDS[wIdx];
+  clearL();clearInterval(timerInterval);
+  remove(ref(db,`rooms/${roomCode}/hmStates`));
   update(ref(db,`rooms/${roomCode}`),{
     status:'hangman',phase:'hm',currentQ:wIdx,hmWordIdx:wIdx,
-    hmWord:w.word,hmHint:w.hint,hmActive:true
+    hmWord:w.word,hmHint:w.hint,hmActive:true,timeLeft:HM_TIME
   });
-  remove(ref(db,`rooms/${roomCode}/hmStates`));
   buildHangmanHostDashboard(w);
   show('sc-hmhost');
-  clearInterval(timerInterval);
-  // 40s host timer visible on projector
   let t=HM_TIME;
   const timerEl=document.getElementById('hm-wordlbl');
   timerEl.textContent=`Palabra ${wIdx+1}/${HM_WORDS.length} — ${t}s`;
@@ -1054,77 +1066,93 @@ function startHangmanWord(wIdx){
     update(ref(db,`rooms/${roomCode}`),{timeLeft:t});
     if(t<=0){
       clearInterval(timerInterval);
-      // reveal word on host dashboard
-      const wDiv=document.getElementById('hmh-word');
-      wDiv.querySelectorAll('.hmltr').forEach(el=>el.style.color='var(--text)');
+      // Revelar palabra
+      document.getElementById('hmh-word').querySelectorAll('.hmltr').forEach(el=>el.style.color='var(--text)');
       document.getElementById('hmh-status').textContent=`Tiempo — la palabra era: ${w.word}`;
       document.getElementById('hmh-status').className='hmh-status lost';
       setTimeout(()=>{
         const isLast=wIdx>=HM_WORDS.length-1;
         document.getElementById(isLast?'hm-finish':'hm-nextword').style.display='inline-flex';
-      },1000);
+      },1200);
     }
   },1000);
+  // Escuchar estados de equipos
   addL(ref(db,`rooms/${roomCode}/hmStates`),snap=>{
-    updateHostDashboard(snap.val()||{},w);
+    updateHostHangmanDashboard(snap.val()||{},w);
   });
 }
 
 function buildHangmanHostDashboard(w){
-  // word display (blanks)
   const wDiv=document.getElementById('hmh-word');wDiv.innerHTML='';
   w.word.split('').forEach(()=>{
     const span=document.createElement('div');span.className='hmltr';span.textContent='_';wDiv.appendChild(span);
   });
   document.getElementById('hmh-status').textContent=`Pista: ${w.hint}`;
   document.getElementById('hmh-status').className='hmh-status';
-  document.getElementById('hm-wordlbl').textContent=`Palabra ${hmWordIdx+1} / ${HM_WORDS.length}`;
   document.getElementById('hm-nextword').style.display='none';
   document.getElementById('hm-finish').style.display='none';
   document.getElementById('hm-teams-grid').innerHTML='';
 }
 
-function updateHostDashboard(states,w){
+function updateHostHangmanDashboard(states,w){
   const grid=document.getElementById('hm-teams-grid');
-  // build/update one card per team
+  // Actualizar la visualización de las letras reveladas (si alguien adivinó)
+  let maxRevealed=[];
+  let anyoneWon=false;
+  Object.values(states).forEach(st=>{
+    if(st.won&&st.revealed){
+      if(st.revealed.length>maxRevealed.filter(Boolean).length){maxRevealed=st.revealed}
+      anyoneWon=true;
+    } else if(st.revealed&&st.revealed.filter(Boolean).length>maxRevealed.filter(Boolean).length){
+      maxRevealed=st.revealed;
+    }
+  });
+  if(maxRevealed.length>0){
+    const letters=document.getElementById('hmh-word').querySelectorAll('.hmltr');
+    w.word.split('').forEach((l,i)=>{
+      if(maxRevealed[i]&&letters[i])letters[i].textContent=l;
+    });
+  }
+  // Tarjetas por equipo
   Object.entries(states).forEach(([pKey,pState])=>{
-    const lives=Math.max(0,HM_PARTS.length-(pState.misses||0));
+    const maxMisses=HM_PARTS.length;
+    const misses=pState.misses||0;
+    const lives=Math.max(0,maxMisses-misses);
     const won=pState.won||false;
     const dead=lives<=0&&!won;
+    const score=pState.score||0;
     let card=document.getElementById(`htc-${pKey}`);
     if(!card){
-      card=document.createElement('div');card.className='hm-team-card';card.id=`htc-${pKey}`;
-      grid.appendChild(card);
+      card=document.createElement('div');card.className='hm-team-card';card.id=`htc-${pKey}`;grid.appendChild(card);
     }
     card.className=`hm-team-card${won?' won':dead?' dead':''}`;
-    const hearts='♥'.repeat(lives)+'♡'.repeat(HM_PARTS.length-lives);
+    const hearts='♥'.repeat(lives)+'♡'.repeat(maxMisses-lives);
     card.innerHTML=`
       <div class="hm-tc-name">${pState.name||'?'}</div>
       <div class="hm-tc-hearts" style="color:${won?'var(--green)':dead?'var(--red)':'var(--gold)'}">${hearts}</div>
-      <div class="hm-tc-lives">${lives} vida${lives!==1?'s':''}</div>
-      <div class="hm-tc-status" style="color:${won?'var(--green)':dead?'var(--red)':'var(--faint)'}">${won?'ADIVINÓ':dead?'ELIMINADO':'jugando...'}</div>`;
+      <div class="hm-tc-lives">${lives} vida${lives!==1?'s':''} · ${misses} error${misses!==1?'es':''}</div>
+      <div class="hm-tc-score">★ ${score} pts</div>
+      <div class="hm-tc-status" style="color:${won?'var(--green)':dead?'var(--red)':'var(--faint)'}">${won?'✓ ADIVINÓ':dead?'✗ ELIMINADO':'jugando...'}</div>`;
   });
-  // check if all done
+  // Verificar si todos terminaron
   const vals=Object.values(states);
   if(vals.length>0&&vals.every(p=>p.won||(p.misses||0)>=HM_PARTS.length)){
+    clearInterval(timerInterval);
     setTimeout(()=>{
       const isLast=hmWordIdx>=HM_WORDS.length-1;
       document.getElementById(isLast?'hm-finish':'hm-nextword').style.display='inline-flex';
-    },1000);
+    },1200);
   }
 }
 
-document.getElementById('hm-nextword').onclick=()=>{
-  startHangmanWord(hmWordIdx+1);
-};
+document.getElementById('hm-nextword').onclick=()=>startHangmanWord(hmWordIdx+1);
 document.getElementById('hm-finish').onclick=()=>endHangman();
 
 async function endHangman(){
   clearInterval(timerInterval);
   const snap=await get(ref(db,`rooms/${roomCode}/players`));
   const players=Object.entries(snap.val()||{}).map(([k,v])=>({...v,key:k})).sort((a,b)=>b.score-a.score);
-  // show score summary first
-  buildScoreList(players,'Ronda 4 — Ahorcado','Puntos totales acumulados','');
+  buildScoreList(players,'Ronda 4 — Ahorcado','Puntos totales acumulados','Fin de todas las rondas');
   document.getElementById('btn-nxt').textContent='Ver podio final →';
   document.getElementById('btn-nxt').onclick=async()=>{
     await update(ref(db,`rooms/${roomCode}`),{status:'podium',winners:players.map(p=>({name:p.name,score:p.score}))});
@@ -1133,96 +1161,99 @@ async function endHangman(){
   show('sc-res');
 }
 
-/* ── HANGMAN PLAYER — individual state ── */
-let hmpRevealed=[],hmpMisses=0,hmpUsed=[],hmpWon=false,hmpDead=false;
-let hmpTimerInterval=null;
-
-const HM_ROWS=['QWERTYUIOP','ASDFGHJKLÑ','ZXCVBNM'];
-
-function buildKeyboard(){
+/* ── HANGMAN PLAYER: estado individual con puntos en vivo ── */
+function buildHangmanKeyboard(){
   const kb=document.getElementById('hmp-keyboard');kb.innerHTML='';
   HM_ROWS.forEach(row=>{
-    const rowDiv=document.createElement('div');
-    rowDiv.style.cssText='display:flex;gap:3px;justify-content:center';
+    const rowDiv=document.createElement('div');rowDiv.style.cssText='display:flex;gap:3px;justify-content:center';
     row.split('').forEach(letter=>{
-      const key=document.createElement('button');
-      key.className='hm-key';key.textContent=letter;key.id=`hk-${letter}`;
-      key.onclick=()=>sendHangmanLetter(letter);
-      rowDiv.appendChild(key);
+      const key=document.createElement('button');key.className='hm-key';key.textContent=letter;key.id=`hk-${letter}`;
+      key.onclick=()=>sendHangmanLetter(letter);rowDiv.appendChild(key);
     });
     kb.appendChild(rowDiv);
   });
 }
 
-function resetKeyboard(){
-  document.querySelectorAll('.hm-key').forEach(k=>{
-    k.classList.remove('used-hit','used-miss','disabled');
-  });
-}
-
-function markKey(letter,hit){
+function markHmKey(letter,hit){
   const el=document.getElementById(`hk-${letter}`);
   if(el)el.classList.add(hit?'used-hit':'used-miss');
 }
 
-function disableKeyboard(){
+function disableHangmanKeyboard(){
   document.querySelectorAll('.hm-key').forEach(k=>k.classList.add('disabled'));
 }
 
-function showHangmanPlayer(room){
+function updateHeartsDisplay(misses){
+  const maxMisses=HM_PARTS.length;
+  const lives=Math.max(0,maxMisses-misses);
+  document.getElementById('hmp-hearts').textContent='♥'.repeat(lives)+'♡'.repeat(maxMisses-lives);
+  document.getElementById('hmp-hearts').style.color=lives<=2?'var(--red)':'var(--gold)';
+}
+
+function updateScoreLive(score,delta){
+  const el=document.getElementById('hm-score-live');
+  if(!el)return;
+  el.textContent=`★ ${score} pts`;
+  el.classList.remove('bump','bump-neg');
+  void el.offsetWidth; // reflow para reiniciar animación
+  el.classList.add(delta>=0?'bump':'bump-neg');
+  setTimeout(()=>el.classList.remove('bump','bump-neg'),600);
+}
+
+async function showHangmanPlayer(room){
   if(isHost)return;
   hmpRevealed=Array(room.hmWord.length).fill(false);
   hmpMisses=0;hmpUsed=[];hmpWon=false;hmpDead=false;
   hmWordIdx=room.hmWordIdx||0;
   clearInterval(hmpTimerInterval);
-  HM_PLAYER_PARTS.forEach(id=>{const el=document.getElementById(id);if(el)el.setAttribute('opacity','0')});
+  // Resetear gallows
+  HM_PARTS.forEach(id=>{const el=document.getElementById(id);if(el)el.setAttribute('opacity','0')});
   document.getElementById('hmp-result').style.display='none';
-  buildKeyboard();
-  resetKeyboard();
-  renderHangmanPlayer(room.hmWord,room.hmHint);
-  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:0,won:false});
+  document.getElementById('hm-last-event').textContent='';
+  // Obtener score actual del jugador
+  const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
+  hmpCurrentScore=(pSnap.val()||{}).score||0;
+  buildHangmanKeyboard();
+  updateHeartsDisplay(0);
+  renderHangmanWord(room.hmWord);
+  document.getElementById('hmp-hint').textContent=`Pista: ${room.hmHint}`;
+  updateScoreLive(hmpCurrentScore,0);
+  // Publicar estado inicial
+  await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:0,won:false,revealed:hmpRevealed,score:hmpCurrentScore});
   show('sc-hmplay');
-  // 40s player timer
-  let t=HM_TIME;
+  // Timer local — sincronizado con el host
+  let t=room.timeLeft||HM_TIME;
   hmpTimerInterval=setInterval(()=>{
     t--;
-    if(t<=0||hmpWon||hmpDead){clearInterval(hmpTimerInterval);if(!hmpWon&&!hmpDead)timeoutHangmanPlayer(room.hmWord);}
+    if(t<=0||hmpWon||hmpDead){
+      clearInterval(hmpTimerInterval);
+      if(!hmpWon&&!hmpDead)timeoutHangmanPlayer(room.hmWord);
+    }
   },1000);
 }
 
-function timeoutHangmanPlayer(word){
-  hmpDead=true;disableKeyboard();
-  const res=document.getElementById('hmp-result');res.style.display='block';
-  const hitsAcum=hmpRevealed.filter(Boolean).length;
-  const ptsTxt=hitsAcum>0?` (+${hitsAcum*50} por ${hitsAcum} letra${hitsAcum!==1?'s':''} correcta${hitsAcum!==1?'s':''})`:'';
-  res.innerHTML=`<span style="color:var(--red)">Tiempo — era: ${word}</span>${ptsTxt?`<br><span style="font-size:.75em;color:var(--gold)">${ptsTxt}</span>`:''}`;
-  word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
-  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:HM_PLAYER_PARTS.length,won:false,hits:hitsAcum});
-}
-
-function updateHangmanPlayer(room){
-  if(!isHost&&room.hmWord){
-    const wDiv=document.getElementById('hmp-word');
-    if(wDiv.children.length===0)renderHangmanPlayer(room.hmWord,room.hmHint);
-  }
-}
-
-function renderHangmanPlayer(word,hint){
+function renderHangmanWord(word){
   const wDiv=document.getElementById('hmp-word');wDiv.innerHTML='';
   word.split('').forEach((l,i)=>{
     const span=document.createElement('div');
     span.className='hmp-ltr'+(hmpRevealed[i]?'':' hidden');
     span.textContent=l;span.id=`hmpL-${i}`;wDiv.appendChild(span);
   });
-  document.getElementById('hmp-hint').textContent=`Pista: ${hint}`;
-  document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
 }
 
-// enter key support
+function timeoutHangmanPlayer(word){
+  hmpDead=true;disableHangmanKeyboard();clearInterval(hmpTimerInterval);
+  word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
+  const res=document.getElementById('hmp-result');res.style.display='block';
+  res.innerHTML=`<span style="color:var(--red)">¡Tiempo! La palabra era: ${word}</span>`;
+  update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:HM_PARTS.length,won:false,revealed:hmpRevealed,score:hmpCurrentScore});
+}
+
+// Enter o tecla física
 document.addEventListener('keydown',e=>{
   if(document.getElementById('sc-hmplay').classList.contains('active')&&!hmpWon&&!hmpDead){
-    const l=e.key.toUpperCase();
-    if(/^[A-ZÁÉÍÓÚÑ]$/.test(l)&&l.length===1)sendHangmanLetter(l);
+    const l=e.key.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(/^[A-ZÑ]$/.test(l)&&l.length===1)sendHangmanLetter(l);
   }
 });
 
@@ -1236,64 +1267,88 @@ async function sendHangmanLetter(letter){
   let hit=false;
   word.split('').forEach((l,i)=>{if(l===letter){hmpRevealed[i]=true;hit=true}});
   if(!hit)hmpMisses++;
-  markKey(letter,hit);
-  // update gallows
-  for(let i=0;i<hmpMisses&&i<HM_PLAYER_PARTS.length;i++){
-    const el=document.getElementById(HM_PLAYER_PARTS[i]);if(el)el.setAttribute('opacity','1');
+  // Actualizar gallows visual
+  for(let i=0;i<HM_PARTS.length;i++){
+    const el=document.getElementById(HM_PARTS[i]);
+    if(el)el.setAttribute('opacity',i<hmpMisses?'1':'0');
   }
-  // update word
+  // Actualizar corazones
+  updateHeartsDisplay(hmpMisses);
+  markHmKey(letter,hit);
+  // Actualizar letras reveladas en la palabra
   word.split('').forEach((l,i)=>{
     const el=document.getElementById(`hmpL-${i}`);
     if(el&&hmpRevealed[i])el.classList.remove('hidden');
   });
-  document.getElementById('hmp-lives').textContent=Math.max(0,HM_PLAYER_PARTS.length-hmpMisses);
+  // Calcular puntos de esta letra
+  const letterPts=hit?PTS_HIT:PTS_MISS;
+  const newScore=Math.max(0,hmpCurrentScore+letterPts);
+  const delta=newScore-hmpCurrentScore;
+  hmpCurrentScore=newScore;
+  // Mostrar último evento
+  const evEl=document.getElementById('hm-last-event');
+  if(hit){
+    evEl.textContent=`"${letter}" ✓  ${delta>=0?'+'+delta:delta} pts`;
+    evEl.style.color='var(--green)';
+  } else {
+    evEl.textContent=`"${letter}" ✗  ${delta>=0?'+'+delta:delta} pts`;
+    evEl.style.color='var(--red)';
+  }
+  // Popup flotante
+  const keyEl=document.getElementById(`hk-${letter}`);
+  if(keyEl){
+    const rect=keyEl.getBoundingClientRect();
+    spawnPtsPopup(letterPts,rect.left+rect.width/2,rect.top);
+  }
+  // Actualizar marcador en vivo
+  updateScoreLive(hmpCurrentScore,letterPts);
   hmpWon=word.split('').every((_,i)=>hmpRevealed[i]);
-  hmpDead=hmpMisses>=HM_PLAYER_PARTS.length;
-  // puntos por letra correcta (+50) o incorrecta (-30) en tiempo real
-  const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
-  const currentScore=(pSnap.val()||{}).score||0;
-  const letterPts=hit?50:-30;
-  const newScore=Math.max(0,currentScore+letterPts);
-  await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:newScore});
-  await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{name:playerName,misses:hmpMisses,won:hmpWon});
-  if(hmpWon||hmpDead){
-    clearInterval(hmpTimerInterval);
-    disableKeyboard();
-    const res=document.getElementById('hmp-result');res.style.display='block';
-    if(hmpWon){
-      // bonus de velocidad: tiempo restante * 10
-      const timeSnap=await get(ref(db,`rooms/${roomCode}/timeLeft`));
-      const tLeft=timeSnap.val()||0;
-      const speedBonus=Math.round(tLeft*10);
-      if(speedBonus>0){
-        const s2=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
-        const sc2=(s2.val()||{}).score||0;
-        await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:sc2+speedBonus,[`pts/hm_${hmWordIdx}_bonus`]:speedBonus});
-      }
-      res.textContent=`¡Adivinaste! ${speedBonus>0?`+${speedBonus} velocidad`:''}`;res.style.color='var(--green)';
-    } else {
-      // si llegó hasta aquí sin adivinar, no penalizar más — ya se descontó por letras
-      res.textContent=`La palabra era: ${word}`;res.style.color='var(--red)';
-      word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
+  hmpDead=hmpMisses>=HM_PARTS.length;
+  // Guardar en Firebase: score y estado
+  await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{
+    score:hmpCurrentScore,
+    [`pts/hm_${hmWordIdx}_${letter}`]:letterPts
+  });
+  await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{
+    name:playerName,misses:hmpMisses,won:hmpWon,revealed:hmpRevealed,score:hmpCurrentScore
+  });
+  if(hmpWon){
+    clearInterval(hmpTimerInterval);disableHangmanKeyboard();
+    // Bonus de velocidad
+    const tSnap=await get(ref(db,`rooms/${roomCode}/timeLeft`));
+    const tLeft=tSnap.val()||0;
+    const speedBonus=Math.round(tLeft*10);
+    if(speedBonus>0){
+      hmpCurrentScore+=speedBonus;
+      await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{score:hmpCurrentScore,[`pts/hm_${hmWordIdx}_bonus`]:speedBonus});
+      await update(ref(db,`rooms/${roomCode}/hmStates/${playerKey}`),{score:hmpCurrentScore});
+      updateScoreLive(hmpCurrentScore,speedBonus);
+      spawnPtsPopup(speedBonus,innerWidth/2,innerHeight/2);
     }
+    const res=document.getElementById('hmp-result');res.style.display='block';
+    res.innerHTML=`<span style="color:var(--green)">¡Correcto! ${speedBonus>0?`<br><span style="font-size:.75em">+${speedBonus} pts velocidad</span>`:''}`;
+    document.getElementById('hm-last-event').textContent=`¡Palabra completada! Total: ${hmpCurrentScore} pts`;
+    document.getElementById('hm-last-event').style.color='var(--gold)';
+  } else if(hmpDead){
+    clearInterval(hmpTimerInterval);disableHangmanKeyboard();
+    word.split('').forEach((_,i)=>{const el=document.getElementById(`hmpL-${i}`);if(el)el.classList.remove('hidden')});
+    const res=document.getElementById('hmp-result');res.style.display='block';
+    res.innerHTML=`<span style="color:var(--red)">Sin vidas — era: ${word}</span>`;
   }
 }
 
 /* ══ SHARED HELPERS ══ */
 function buildAnsGrid(opts,idx,type){
-  const grid=document.getElementById('qh-ag');grid.innerHTML='';
-  grid.className='ag';
+  const grid=document.getElementById('qh-ag');grid.innerHTML='';grid.className='ag';
   const lets=['A','B','C','D'],cls=['ca','cb','cc','cd'];
   opts.forEach((o,i)=>{
     const b=document.createElement('div');b.className=`ab ${cls[i]}`;b.id=`ab${i}`;
-    b.innerHTML=`<span class="al">${lets[i]}</span><span class="at">${o}</span>`;
-    grid.appendChild(b);
+    b.innerHTML=`<span class="al">${lets[i]}</span><span class="at">${o}</span>`;grid.appendChild(b);
   });
 }
 
 function buildPlayerGrid(opts,idx,type){
-  const grid=document.getElementById('qp-grid');grid.innerHTML='';
-  grid.style.display='grid';
+  const grid=document.getElementById('qp-grid');grid.innerHTML='';grid.style.display='grid';
   document.getElementById('qp-sent').style.display='none';
   const cls=['qa','qb','qc','qd'];
   opts.forEach((o,i)=>{
@@ -1307,15 +1362,6 @@ function listenAnswers(idx,type){
     const pl=snap.val()||{};
     let cnt=0;Object.values(pl).forEach(p=>{if(p.answers&&p.answers[`${type}_${idx}`]!==undefined)cnt++});
     document.getElementById('qh-recv').textContent=`${cnt} respuesta${cnt!==1?'s':''}`;
-  });
-}
-
-function listenTimerPlayer(){
-  addL(ref(db,`rooms/${roomCode}/timeLeft`),snap=>{
-    if(snap.val()===null||snap.val()===undefined)return;
-    const t=snap.val();
-    // no display on player — just track
-    timeLeft=t;
   });
 }
 
@@ -1353,12 +1399,9 @@ async function submitAnswer(optIdx,idx,type){
 }
 
 function revealImgVid(idx,type){
-  const qs=type==='img'?IMG_QS:VID_QS;
-  const q=qs[idx];
-  // reveal image fully
+  const qs=type==='img'?IMG_QS:VID_QS;const q=qs[idx];
   if(type==='img')document.getElementById('im-rev').classList.replace('b1','b0');
   if(type==='vid')document.getElementById('vmask').classList.add('gone');
-  // highlight answers
   q.opts.forEach((_,i)=>{
     const el=document.getElementById(`ab${i}`);if(!el)return;
     el.classList.add(i===q.ans?'correct':'wrong');
@@ -1374,9 +1417,7 @@ async function showResults(type,idx){
   const snap=await get(ref(db,`rooms/${roomCode}/players`));
   const players=Object.entries(snap.val()||{}).map(([k,v])=>({...v,key:k})).sort((a,b)=>b.score-a.score);
   const rndLabel=type==='img'?'Ronda 1 — Imagen Misteriosa':'Ronda 2 — Adivina el Video';
-  const correctTxt=q?`Respuesta correcta: ${q.opts[q.ans]}`:``;
-  buildScoreList(players,`${rndLabel} · Pregunta ${idx+1}`,q?.q||'',correctTxt);
-  // next button logic
+  buildScoreList(players,`${rndLabel} · Pregunta ${idx+1}`,q?.q||'',q?`Respuesta: ${q.opts[q.ans]}`:'');
   const btn=document.getElementById('btn-nxt');
   if(type==='img'){
     if(idx<IMG_QS.length-1){btn.textContent='Siguiente imagen →';btn.onclick=()=>startImgQ(idx+1)}
@@ -1391,24 +1432,27 @@ async function showResults(type,idx){
 function buildScoreList(players,rnd,q,badge){
   document.getElementById('r-rnd').textContent=rnd||'';
   document.getElementById('r-q').textContent=q||'';
-  document.getElementById('r-badge').textContent=badge||'';
+  const badgeEl=document.getElementById('r-badge');
+  badgeEl.textContent=badge||'';
+  badgeEl.style.display=badge?'inline-block':'none';
   const sc=document.getElementById('r-scores');sc.innerHTML='';
   players.forEach((p,i)=>{
     const row=document.createElement('div');row.className=`srow ${i===0?'s1':i===1?'s2':i===2?'s3':''}`;
     row.style.animationDelay=`${i*.07}s`;
-    row.innerHTML=`<span class="srk">${i+1}</span><span class="snm">${p.name}</span><span class="spt">${p.score}</span>`;
+    row.innerHTML=`<span class="srk">${i+1}</span><span class="snm">${p.name}</span><span class="spt">${p.score} pts</span>`;
     sc.appendChild(row);
   });
 }
 
-/* ══ PLAYER RESULT ══ */
+/* ══ PLAYER RESULT (pantalla de espera entre preguntas) ══ */
 async function showPlayerResult(room){
   clearInterval(timerInterval);
   const snap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
   const p=snap.val()||{};
-  const allP=Object.values((await get(ref(db,`rooms/${roomCode}/players`))).val()||{}).sort((a,b)=>b.score-a.score);
+  const allSnap=await get(ref(db,`rooms/${roomCode}/players`));
+  const allP=Object.values(allSnap.val()||{}).sort((a,b)=>b.score-a.score);
   const rank=allP.findIndex(pl=>pl.name===playerName)+1;
-  document.getElementById('pr-icon').textContent='';
+  document.getElementById('pr-icon').textContent=rank===1?'🏆':rank===2?'🥈':rank===3?'🥉':'';
   document.getElementById('pr-h').textContent=`${p.score||0} pts`;
   document.getElementById('pr-pts').textContent=`Posición: ${rank}° de ${allP.length}`;
   document.getElementById('pr-rank').textContent='';
@@ -1419,7 +1463,7 @@ function showRoundIntroPlayer(room){
   const ph=room.phase||'';
   const names={img:'Imagen Misteriosa',vid:'Adivina el Video',pz:'Rompecabezas',hm:'Ahorcado'};
   const nums={img:1,vid:2,pz:3,hm:4};
-  const subs={img:'Identificá el hito histórico por la imagen',vid:'¿A qué hito pertenece este video?',pz:'Armá el rompecabezas arrastrando las piezas',hm:'Proponé letras para adivinar la palabra'};
+  const subs={img:'Identificá el hito histórico por la imagen',vid:'¿A qué hito pertenece este video?',pz:'Armá el rompecabezas colocando cada pieza',hm:'Adiviná la palabra histórica letra por letra'};
   document.getElementById('ri-rnd').textContent=`Ronda ${nums[ph]||1}`;
   document.getElementById('ri-num').textContent=nums[ph]||1;
   document.getElementById('ri-title').textContent=names[ph]||'';
@@ -1447,14 +1491,14 @@ function buildPodium(players){
   order.forEach((i,vi)=>{
     if(!players[i])return;
     const col=document.createElement('div');col.className='podcol';
-    col.innerHTML=`<div class="podnm">${players[i].name}</div><div class="podsc">${players[i].score} pts</div><div class="podbar ${pbCls[vi]}">${['2','1','3'][vi]}</div>`;
+    col.innerHTML=`<div class="podnm">${players[i].name}</div><div class="podsc">${players[i].score} pts</div><div class="podbar ${pbCls[vi]}">${['🥈','🏆','🥉'][vi]}</div>`;
     stage.appendChild(col);
   });
   const sc=document.getElementById('pod-scores');sc.innerHTML='';
   players.forEach((p,i)=>{
     const row=document.createElement('div');row.className=`srow ${i===0?'s1':i===1?'s2':i===2?'s3':''}`;
     row.style.animationDelay=`${i*.09}s`;
-    row.innerHTML=`<span class="srk">${i+1}</span><span class="snm">${p.name}</span><span class="spt">${p.score}</span>`;
+    row.innerHTML=`<span class="srk">${i+1}</span><span class="snm">${p.name}</span><span class="spt">${p.score} pts</span>`;
     sc.appendChild(row);
   });
 }
@@ -1465,16 +1509,19 @@ function launchConfetti(){
 }
 function showPodium(room){
   if(isHost)return;
-  clearInterval(timerInterval);buildPodium(room.winners||[]);launchConfetti();show('sc-pod');
+  clearInterval(timerInterval);clearInterval(hmpTimerInterval);
+  buildPodium(room.winners||[]);launchConfetti();show('sc-pod');
 }
 
 /* ══ RESET ══ */
 document.getElementById('btn-reset').onclick=async()=>{
-  clearL();clearInterval(timerInterval);
+  clearL();clearInterval(timerInterval);clearInterval(hmpTimerInterval);
+  if(gameListenerRef)off(gameListenerRef);
   if(roomCode)await remove(ref(db,`rooms/${roomCode}`));
   roomCode=null;playerKey=null;playerName=null;answered=false;isHost=false;
-  lastStatus='';lastQShown=-1;hmWordIdx=0;hmMisses=0;hmRevealed=[];hmUsed=[];
-  document.body.className='';show('sc-land');
+  lastStatus='';hmWordIdx=0;hmpMisses=0;hmpRevealed=[];hmpUsed=[];hmpCurrentScore=0;
+  pzSelected=null;pzSolvedCount=0;pzLocalScore=0;
+  show('sc-land');
 };
 </script>
 </body>
