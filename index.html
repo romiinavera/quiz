@@ -746,26 +746,33 @@ function startPuzzleHost(pIdx){
 function updateHostPuzzleGroups(solved,pz){
   const total=pz.cols*pz.rows;
   const byPlayer={};
-  Object.entries(solved).forEach(([key,data])=>{
+  Object.entries(solved).forEach(([slotKey,data])=>{
     const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
-    if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++;
+    Object.keys(byPlayer).forEach(n=>{
+      if(n!==nm&&byPlayer[n][slotKey])delete byPlayer[n][slotKey];
+    });
+    if(!byPlayer[nm])byPlayer[nm]={};
+    byPlayer[nm][slotKey]=true;
   });
   const container=document.getElementById('pzh-groups');
   container.style.display='block';
   const existing={};
   container.querySelectorAll('.pzg-row').forEach(r=>{existing[r.dataset.name]=r});
-  Object.entries(byPlayer).sort((a,b)=>b[1]-a[1]).forEach(([nm,cnt])=>{
-    const pct=Math.round(cnt/total*100);const done=cnt>=total;
-    if(existing[nm]){
-      existing[nm].className=`pzg-row${done?' done':''}`;
-      existing[nm].querySelector('.pzg-bar').style.width=pct+'%';
-      existing[nm].querySelector('.pzg-count').textContent=`${cnt}/${total} piezas · ${cnt*pz.ptsPerPiece}pts`;
-    } else {
-      const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;row.dataset.name=nm;
-      row.innerHTML=`<span class="pzg-name">${nm}</span><div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div><span class="pzg-count">${cnt}/${total} piezas · ${cnt*pz.ptsPerPiece}pts</span>`;
-      container.appendChild(row);
-    }
-  });
+  Object.entries(byPlayer)
+    .map(([nm,slots])=>[nm,Object.keys(slots).length])
+    .sort((a,b)=>b[1]-a[1])
+    .forEach(([nm,cnt])=>{
+      const pct=Math.round(cnt/total*100);const done=cnt>=total;
+      if(existing[nm]){
+        existing[nm].className=`pzg-row${done?' done':''}`;
+        existing[nm].querySelector('.pzg-bar').style.width=pct+'%';
+        existing[nm].querySelector('.pzg-count').textContent=`${cnt}/${total} piezas · ${cnt*pz.ptsPerPiece}pts`;
+      } else {
+        const row=document.createElement('div');row.className=`pzg-row${done?' done':''}`;row.dataset.name=nm;
+        row.innerHTML=`<span class="pzg-name">${nm}</span><div class="pzg-bar-wrap"><div class="pzg-bar" style="width:${pct}%"></div></div><span class="pzg-count">${cnt}/${total} piezas · ${cnt*pz.ptsPerPiece}pts</span>`;
+        container.appendChild(row);
+      }
+    });
 }
 
 function endPuzzle(pIdx){
@@ -813,10 +820,15 @@ async function showPuzzleResults(){
   const solved=solvedSnap.val()||{};
   const total=pz.cols*pz.rows;
   const byPlayer={};
-  Object.entries(solved).forEach(([key,data])=>{
+  Object.entries(solved).forEach(([slotKey,data])=>{
     const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
-    if(!byPlayer[nm])byPlayer[nm]=0;byPlayer[nm]++;
+    Object.keys(byPlayer).forEach(n=>{
+      if(n!==nm&&byPlayer[n]&&byPlayer[n][slotKey])delete byPlayer[n][slotKey];
+    });
+    if(!byPlayer[nm])byPlayer[nm]={};
+    byPlayer[nm][slotKey]=true;
   });
+  Object.keys(byPlayer).forEach(nm=>{byPlayer[nm]=Object.keys(byPlayer[nm]).length});
   document.getElementById('r-rnd').textContent='Ronda 3 — Rompecabezas';
   document.getElementById('r-q').textContent=pz.label;
   document.getElementById('r-badge').textContent=`${total} piezas · ${pz.ptsPerPiece} pts c/u`;
@@ -1147,7 +1159,7 @@ function updateHostHangmanDashboard(states,w){
   }
   const pct=Math.round(revealedCount/total*100);
   progEl.textContent=`Letras descubiertas: ${revealedCount}/${total} (${pct}%)`;
-  
+
   Object.entries(states).forEach(([pKey,pState])=>{
     const maxMisses=HM_PARTS.length;
     const misses=pState.misses||0;
