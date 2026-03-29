@@ -746,10 +746,11 @@ function startPuzzleHost(pIdx){
 function updateHostPuzzleGroups(solved,pz){
   const total=pz.cols*pz.rows;
   const byPlayer={};
-  Object.entries(solved).forEach(([pKey,slots])=>{
-    if(typeof slots!=='object')return;
-    const nm=Object.values(slots)[0]?.name||pKey;
-    byPlayer[nm]=Object.keys(slots).length;
+  Object.entries(solved).forEach(([pKey,playerData])=>{
+    if(!playerData||typeof playerData!=='object')return;
+    const nm=(playerData.meta&&playerData.meta.name)||pKey;
+    const pieces=playerData.pieces||{};
+    byPlayer[nm]=Object.keys(pieces).length;
   });
   const container=document.getElementById('pzh-groups');
   container.style.display='block';
@@ -817,10 +818,11 @@ async function showPuzzleResults(){
   const solved=solvedSnap.val()||{};
   const total=pz.cols*pz.rows;
   const byPlayer={};
-  Object.entries(solved).forEach(([pKey,slots])=>{
-    if(typeof slots!=='object')return;
-    const nm=Object.values(slots)[0]?.name||pKey;
-    byPlayer[nm]=Object.keys(slots).length;
+  Object.entries(solved).forEach(([pKey,playerData])=>{
+    if(!playerData||typeof playerData!=='object')return;
+    const nm=(playerData.meta&&playerData.meta.name)||pKey;
+    const pieces=playerData.pieces||{};
+    byPlayer[nm]=Object.keys(pieces).length;
   });
   document.getElementById('r-rnd').textContent='Ronda 3 — Rompecabezas';
   document.getElementById('r-q').textContent=pz.label;
@@ -1031,8 +1033,9 @@ async function _placePzPiece(slot,tray,total,ptsPerPiece){
   const correct=(sr===pr&&sc_===pc);
   const pieceKey=`${sr}_${sc_}`;
 
-  if(correct && !_pzConfirmedKeys.has(pieceKey)){
-    _pzConfirmedKeys.add(pieceKey);
+  const localPieceKey=`${sr}_${sc_}`;
+  if(correct && !_pzConfirmedKeys.has(localPieceKey)){
+    _pzConfirmedKeys.add(localPieceKey);
     slot.classList.add('correct');
     // Mostrar la imagen correcta dentro del slot como confirmación visual
     pzSelected.style.outline='none';
@@ -1049,12 +1052,13 @@ async function _placePzPiece(slot,tray,total,ptsPerPiece){
       statusEl.textContent=`¡Rompecabezas completo! — esperá los resultados`;
     }
     try{
-      await update(ref(db,`rooms/${roomCode}/puzzleSolved/${playerKey}`),{[pieceKey]:{name:playerName||'?',key:playerKey}});
+      await set(ref(db,`rooms/${roomCode}/puzzleSolved/${playerKey}/meta`),{name:playerName||'?'});
+await update(ref(db,`rooms/${roomCode}/puzzleSolved/${playerKey}/pieces`),{[pieceKey]:true});
       const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
       const curScore=(pSnap.val()||{}).score||0;
       await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{
         score:curScore+ptsPerPiece,
-        [`pts/pz_${pieceKey}`]:ptsPerPiece
+        [`pts/pz_${localPieceKey}`]:ptsPerPiece
       });
     }catch(err){console.warn('Firebase puzzle update error:',err)}
   } else if(!correct){
