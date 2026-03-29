@@ -736,10 +736,9 @@ function startPuzzleHost(pIdx){
     if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
   // Escuchar estado de puzzles en tiempo real — solo para el admin
-  onValue(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
-    const data=snap.val()||{};
-    window._lastPuzzleSolved=data;
-    updateHostPuzzleGroups(data,pz);
+  addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
+    window._lastPuzzleSolved=snap.val()||{};
+    updateHostPuzzleGroups(snap.val()||{},pz);
   });
   listenPlayers();
 }
@@ -751,14 +750,14 @@ function updateHostPuzzleGroups(solved,pz){
     if(!playerData||typeof playerData!=='object')return;
     const nm=(playerData.meta&&playerData.meta.name)||pKey;
     const pieces=playerData.pieces||{};
-    byPlayer[nm]=Object.keys(pieces).length;
+    const cnt=Object.keys(pieces).length;
+    if(cnt>0)byPlayer[nm]=cnt;
   });
   const container=document.getElementById('pzh-groups');
   container.style.display='block';
   const existing={};
   container.querySelectorAll('.pzg-row').forEach(r=>{existing[r.dataset.name]=r});
   Object.entries(byPlayer)
-    .map(([nm,slots])=>[nm,Object.keys(slots).length])
     .sort((a,b)=>b[1]-a[1])
     .forEach(([nm,cnt])=>{
       const pct=Math.round(cnt/total*100);const done=cnt>=total;
@@ -823,7 +822,8 @@ async function showPuzzleResults(){
     if(!playerData||typeof playerData!=='object')return;
     const nm=(playerData.meta&&playerData.meta.name)||pKey;
     const pieces=playerData.pieces||{};
-    byPlayer[nm]=Object.keys(pieces).length;
+    const cnt=Object.keys(pieces).length;
+    if(cnt>0)byPlayer[nm]=cnt;
   });
   document.getElementById('r-rnd').textContent='Ronda 3 — Rompecabezas';
   document.getElementById('r-q').textContent=pz.label;
