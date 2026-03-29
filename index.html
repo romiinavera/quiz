@@ -746,13 +746,10 @@ function startPuzzleHost(pIdx){
 function updateHostPuzzleGroups(solved,pz){
   const total=pz.cols*pz.rows;
   const byPlayer={};
-  Object.entries(solved).forEach(([slotKey,data])=>{
-    const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
-    Object.keys(byPlayer).forEach(n=>{
-      if(n!==nm&&byPlayer[n][slotKey])delete byPlayer[n][slotKey];
-    });
-    if(!byPlayer[nm])byPlayer[nm]={};
-    byPlayer[nm][slotKey]=true;
+  Object.entries(solved).forEach(([pKey,slots])=>{
+    if(typeof slots!=='object')return;
+    const nm=Object.values(slots)[0]?.name||pKey;
+    byPlayer[nm]=Object.keys(slots).length;
   });
   const container=document.getElementById('pzh-groups');
   container.style.display='block';
@@ -820,15 +817,11 @@ async function showPuzzleResults(){
   const solved=solvedSnap.val()||{};
   const total=pz.cols*pz.rows;
   const byPlayer={};
-  Object.entries(solved).forEach(([slotKey,data])=>{
-    const nm=typeof data==='string'?data:(data&&data.name?data.name:'?');
-    Object.keys(byPlayer).forEach(n=>{
-      if(n!==nm&&byPlayer[n]&&byPlayer[n][slotKey])delete byPlayer[n][slotKey];
-    });
-    if(!byPlayer[nm])byPlayer[nm]={};
-    byPlayer[nm][slotKey]=true;
+  Object.entries(solved).forEach(([pKey,slots])=>{
+    if(typeof slots!=='object')return;
+    const nm=Object.values(slots)[0]?.name||pKey;
+    byPlayer[nm]=Object.keys(slots).length;
   });
-  Object.keys(byPlayer).forEach(nm=>{byPlayer[nm]=Object.keys(byPlayer[nm]).length});
   document.getElementById('r-rnd').textContent='Ronda 3 — Rompecabezas';
   document.getElementById('r-q').textContent=pz.label;
   document.getElementById('r-badge').textContent=`${total} piezas · ${pz.ptsPerPiece} pts c/u`;
@@ -1056,7 +1049,7 @@ async function _placePzPiece(slot,tray,total,ptsPerPiece){
       statusEl.textContent=`¡Rompecabezas completo! — esperá los resultados`;
     }
     try{
-      await update(ref(db,`rooms/${roomCode}/puzzleSolved`),{[pieceKey]:{name:playerName||'?',key:playerKey}});
+      await update(ref(db,`rooms/${roomCode}/puzzleSolved/${playerKey}`),{[pieceKey]:{name:playerName||'?',key:playerKey}});
       const pSnap=await get(ref(db,`rooms/${roomCode}/players/${playerKey}`));
       const curScore=(pSnap.val()||{}).score||0;
       await update(ref(db,`rooms/${roomCode}/players/${playerKey}`),{
