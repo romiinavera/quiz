@@ -736,9 +736,10 @@ function startPuzzleHost(pIdx){
     if(timeLeft<=0){clearInterval(timerInterval);endPuzzle(pIdx)}
   },1000);
   // Escuchar estado de puzzles en tiempo real — solo para el admin
-  addL(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
-    window._lastPuzzleSolved=snap.val()||{};
-    updateHostPuzzleGroups(snap.val()||{},pz);
+  onValue(ref(db,`rooms/${roomCode}/puzzleSolved`),snap=>{
+    const data=snap.val()||{};
+    window._lastPuzzleSolved=data;
+    updateHostPuzzleGroups(data,pz);
   });
   listenPlayers();
 }
