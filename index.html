@@ -340,16 +340,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Crimson Pro',Georg
     <div class="qhpbar"><div class="qhpfill" id="pz-pf" style="width:100%"></div></div>
     <div class="qhtimer" id="pz-timer">20</div>
   </div>
-  <div style="display:flex;gap:clamp(12px,2.5vw,28px);align-items:flex-start;width:100%;max-width:900px;flex-wrap:wrap;justify-content:center;flex:1">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)">Imagen correcta</div>
-      <img id="pzh-ref-img" src="" style="width:clamp(140px,22vw,240px);height:clamp(100px,16vw,180px);object-fit:cover;border:1px solid rgba(255,255,255,.15)" alt="">
-      <div class="pzh-label" id="pzh-label" style="font-size:clamp(9px,1.2vw,11px);color:var(--dim)"></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Estado de grupos</div>
-      <div id="pzh-groups"></div>
-    </div>
+  <img id="pzh-ref-img" src="" style="width:clamp(260px,55vw,700px);height:clamp(180px,38vw,480px);object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 40px var(--glow)" alt="">
+  <div class="pzh-label" id="pzh-label" style="font-size:clamp(9px,1.2vw,11px);color:var(--dim)"></div>
+  <div style="width:100%;max-width:700px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(7px,1vw,9px);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Estado de grupos</div>
+    <div id="pzh-groups"></div>
   </div>
   <div class="pzh-info" id="pzh-info">Los grupos arman el rompecabezas desde su dispositivo</div>
   <button class="btn btn-g" id="pz-next" style="margin-top:6px;display:none">Siguiente →</button>
@@ -717,7 +712,7 @@ function startPuzzleHost(pIdx){
   // UI host
   document.getElementById('pzh-title').textContent=`Rompecabezas ${pIdx+1}/${PUZZLES.length}`;
   document.getElementById('pzh-ref-img').src=pz.img;
-  document.getElementById('pzh-ref-img').style.cssText='width:clamp(200px,38vw,500px);height:clamp(140px,28vw,360px);object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 40px var(--glow)';
+  document.getElementById('pzh-ref-img').style.cssText='width:clamp(260px,55vw,700px);height:clamp(180px,38vw,480px);object-fit:cover;border:2px solid var(--gold);box-shadow:0 0 40px var(--glow)';
   document.getElementById('pzh-label').textContent=pz.label;
   document.getElementById('pzh-groups').innerHTML='';
   document.getElementById('pzh-groups').style.display='none';
@@ -777,7 +772,7 @@ function endPuzzle(pIdx){
   clearInterval(timerInterval);
   if(isHost)update(ref(db,`rooms/${roomCode}`),{status:'puzzle-end',phase:'pz',currentQ:pIdx});
   const pz=PUZZLES[pIdx];
-  document.getElementById('pzh-ref-img').style.cssText='width:clamp(100px,16vw,180px);height:clamp(70px,12vw,130px);object-fit:cover;border:1px solid var(--gold)';
+  document.getElementById('pzh-ref-img').style.cssText='width:clamp(200px,40vw,500px);height:clamp(140px,28vw,360px);object-fit:cover;border:1px solid var(--gold);opacity:.7';
   document.getElementById('pzh-groups').style.display='block';
   document.getElementById('pzh-info').textContent='Tiempo agotado — así quedaron los grupos:';
   const isLast=pIdx>=PUZZLES.length-1;
