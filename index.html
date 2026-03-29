@@ -1128,16 +1128,26 @@ function buildHangmanHostDashboard(w){
 /* Admin ve score en tiempo real de cada equipo */
 function updateHostHangmanDashboard(states,w){
   const grid=document.getElementById('hm-teams-grid');
-  let maxRevealed=[];
+  // Solo muestra cuántas letras únicas fueron adivinadas en total, sin revelarlas
+  const allRevealed=Array(w.word.length).fill(false);
   Object.values(states).forEach(st=>{
-    if(st.revealed&&st.revealed.filter(Boolean).length>maxRevealed.filter(Boolean).length){maxRevealed=st.revealed}
+    if(st.revealed)st.revealed.forEach((v,i)=>{if(v)allRevealed[i]=true});
   });
-  if(maxRevealed.length>0){
-    const letters=document.getElementById('hmh-word').querySelectorAll('.hmltr');
-    w.word.split('').forEach((l,i)=>{
-      if(maxRevealed[i]&&letters[i])letters[i].textContent=l;
-    });
+  const revealedCount=allRevealed.filter(Boolean).length;
+  const total=w.word.length;
+  const letters=document.getElementById('hmh-word').querySelectorAll('.hmltr');
+  letters.forEach(l=>l.textContent='_'); // siempre ocultas
+  // Muestra barra de progreso global debajo de la palabra
+  let progEl=document.getElementById('hmh-progress');
+  if(!progEl){
+    progEl=document.createElement('div');
+    progEl.id='hmh-progress';
+    progEl.style.cssText='font-family:\'JetBrains Mono\',monospace;font-size:clamp(8px,1.2vw,11px);letter-spacing:.14em;color:var(--gold);margin-top:6px';
+    document.getElementById('hmh-word').insertAdjacentElement('afterend',progEl);
   }
+  const pct=Math.round(revealedCount/total*100);
+  progEl.textContent=`Letras descubiertas: ${revealedCount}/${total} (${pct}%)`;
+  
   Object.entries(states).forEach(([pKey,pState])=>{
     const maxMisses=HM_PARTS.length;
     const misses=pState.misses||0;
